@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
+POWERLINE_ORG_PS1=$PS1
+
 alias prompt_short_dir="export POWERLINE_SHORT=dir"
 alias prompt_short_path="export POWERLINE_SHORT=path"
 alias prompt_short_default="export POWERLINE_SHORT=default"
 alias prompt_short_off="export POWERLINE_SHORT=default"
 
 alias prompt_reload="source ~/.bashrc"
+alias prompt_default="export PROMPT_COMMAND=ps1_default"
+alias prompt_off="export PROMPT_COMMAND=ps1_off"
+alias prompt_on="export PROMPT_COMMAND=ps1_on"
 
 __powerline() {
 
@@ -115,7 +120,15 @@ __powerline() {
         fi
    }
 
-    ps1() {
+    ps1_default() {
+        PS1=$POWERLINE_ORG_PS1 
+    }
+
+    ps1_off() {
+        PS1="$ "
+    }
+
+    ps1_on() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly. 
         local rc=$?
@@ -168,7 +181,7 @@ __powerline() {
         PS1+=" "
     }
 
-    PROMPT_COMMAND=ps1
+    PROMPT_COMMAND=ps1_on
 }
 
 __powerline
