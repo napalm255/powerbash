@@ -14,7 +14,7 @@ Powerline for Bash in pure Bash script.
 * Color code for root
 * Color code for sudo session
 * Color code for the previously failed command
-* Directory shortening ('/some/.../long/path')
+* Directory shortening ('/some/.../long/path' or '..me/long/path')
 * Fast execution (no noticable delay)
 * No need for patched fonts
 
