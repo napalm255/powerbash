@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+alias prompt_short_dir="export POWERLINE_SHORT=dir"
+alias prompt_short_path="export POWERLINE_SHORT=path"
+alias prompt_short_default="export POWERLINE_SHORT=default"
+alias prompt_short_off="export POWERLINE_SHORT=default"
+
 __powerline() {
 
     # Unicode symbols
@@ -134,11 +139,20 @@ __powerline() {
             local IS_SSH=""
         fi
 
+        # Check short method
+        if [ "$POWERLINE_SHORT" == "dir" ]; then
+          local SHORT=$(__short_dir)
+        elif [ "$POWERLINE_SHORT" == "path" ]; then
+          local SHORT=$(__short_path)
+        elif [ "$POWERLINE_SHORT" == "default" ]; then
+          local SHORT=$PWD
+        else
+          local SHORT=$(__short_dir)
+        fi
+
         PS1=""
         PS1+="$BG_BASE03$FG_BASE3$IS_SUDO \u$IS_SSH $RESET"
-        #PS1+="$BG_BASE03$FG_BASE3 $(__short_dir) $RESET"
-        PS1+="$BG_BASE03$FG_BASE3 $(__short_path) $RESET"
-        #PS1+="$BG_BASE03$FG_BASE3 \w $RESET"
+        PS1+="$BG_BASE03$FG_BASE3 $SHORT $RESET"
         PS1+="$BG_BLUE$FG_BASE3$(__git_info)$RESET"
         PS1+="$BG_ROOT$FG_BASE3 $PS_SYMBOL $RESET"
         PS1+="$BG_EXIT"
