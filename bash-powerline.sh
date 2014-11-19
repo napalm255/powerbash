@@ -159,7 +159,7 @@ __powerline() {
         fi
 
         PS1=""
-        PS1+="$BG_BASE02$FG_BASE3$IS_SUDO \u$IS_SSH $RESET"
+        PS1+="$BG_BASE03$FG_BASE3$IS_SUDO \u$IS_SSH $RESET"
         PS1+="$BG_BASE03$FG_BASE3 $SHORT $RESET"
         PS1+="$BG_BLUE$FG_BASE3$(__git_info)$RESET"
         PS1+="$BG_MAGENTA$FG_BASE3$(__jobs_display)$RESET"
