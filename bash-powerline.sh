@@ -109,6 +109,12 @@ __powerline() {
         echo $SHORT_PATH
    }
 
+   __jobs_display() {
+        if [ "$(jobs | wc -l)" -ne "0" ]; then
+            echo " $(jobs | wc -l) "
+        fi
+   }
+
     ps1() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly. 
@@ -156,6 +162,7 @@ __powerline() {
         PS1+="$BG_BASE03$FG_BASE3$IS_SUDO \u$IS_SSH $RESET"
         PS1+="$BG_BASE03$FG_BASE3 $SHORT $RESET"
         PS1+="$BG_BLUE$FG_BASE3$(__git_info)$RESET"
+        PS1+="$BG_BASE1$FG_BASE3$(__jobs_display)$RESET"
         PS1+="$BG_ROOT$FG_BASE3 $PS_SYMBOL $RESET"
         PS1+="$BG_EXIT"
         PS1+=" "
