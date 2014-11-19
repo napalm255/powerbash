@@ -13,7 +13,8 @@ Powerline for Bash in pure Bash script.
 * Hostname displayed only when SSH'd
 * Color code for root
 * Color code for sudo session
-* Color code for the previously failed command
+* Color code with exit code for the previously failed command
+* Color code with jobs count
 * Directory shortening ('/some/.../long/path' or '..me/long/path')
 * Fast execution (no noticable delay)
 * No need for patched fonts
