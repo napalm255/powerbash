@@ -105,8 +105,9 @@ __powerline() {
     ps1() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly. 
-        if [ $? -ne 0 ]; then
-            local BG_EXIT="$BG_ORANGE$FG_BASE3 $? $RESET"
+        local rc=$?
+        if [ $rc -ne 0 ]; then
+            local BG_EXIT="$BG_ORANGE$FG_BASE3 $rc $RESET"
         else
             local BG_EXIT=""
         fi
