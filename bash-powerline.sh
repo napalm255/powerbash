@@ -65,9 +65,9 @@ __powerline() {
         [ -n "$(git status --porcelain)" ] && marks+=" $GIT_BRANCH_CHANGED_SYMBOL"
 
         # how many commits local branch is ahead/behind of remote?
-        local stat="$(git status --porcelain --branch | grep '^##' | grep -o '\[.\+\]$')"
-        local aheadN="$(echo $stat | grep -o 'ahead \d\+' | grep -o '\d\+')"
-        local behindN="$(echo $stat | grep -o 'behind \d\+' | grep -o '\d\+')"
+        local stat="$(git status --porcelain --branch | head -n1)"
+        local aheadN="$(echo $stat | grep  'ahead' | grep -o '[0-9]')"
+        local behindN="$(echo $stat | grep 'behind' | grep -o '[0-9]')"
         [ -n "$aheadN" ] && marks+=" $GIT_NEED_PUSH_SYMBOL$aheadN"
         [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
 
@@ -105,8 +105,9 @@ __powerline() {
     ps1() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly. 
-        if [ $? -ne 0 ]; then
-            local BG_EXIT="$BG_ORANGE$FG_BASE3 $? $RESET"
+        local rc=$?
+        if [ $rc -ne 0 ]; then
+            local BG_EXIT="$BG_ORANGE$FG_BASE3 $rc $RESET"
         else
             local BG_EXIT=""
         fi
@@ -135,8 +136,8 @@ __powerline() {
 
         PS1=""
         PS1+="$BG_BASE03$FG_BASE3$IS_SUDO \u$IS_SSH $RESET"
-        PS1+="$BG_BASE03$FG_BASE3 $(__short_dir) $RESET"
-        #PS1+="$BG_BASE03$FG_BASE3 $(__short_path) $RESET"
+        #PS1+="$BG_BASE03$FG_BASE3 $(__short_dir) $RESET"
+        PS1+="$BG_BASE03$FG_BASE3 $(__short_path) $RESET"
         #PS1+="$BG_BASE03$FG_BASE3 \w $RESET"
         PS1+="$BG_BLUE$FG_BASE3$(__git_info)$RESET"
         PS1+="$BG_ROOT$FG_BASE3 $PS_SYMBOL $RESET"
