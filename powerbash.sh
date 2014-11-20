@@ -4,10 +4,10 @@
 complete -F __powerbash_complete powerbash
 
 # save system PS1
-if [ -z "$POWERBASH_ORG_PS1" ]; then POWERBASH_ORG_PS1=$PS1; fi
+if [ -z "$POWERBASH_SYSTEM_PS1" ]; then POWERBASH_SYSTEM_PS1=$PS1; fi
 
 # set default variables
-POWERBASH_SHORT_NUM=20
+if [ -z "$POWERBASH_SHORT_NUM" ]; then POWERBASH_SHORT_NUM=20; fi
 
 
 powerbash() {
@@ -298,7 +298,7 @@ __powerbash() {
 
     __powerbash_ps1-system() {
         # set prompt
-        PS1=$POWERBASH_ORG_PS1 
+        PS1=$POWERBASH_SYSTEM_PS1 
     }
 
     __powerbash_ps1-off() {
