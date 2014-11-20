@@ -4,43 +4,43 @@
 complete -F __powerbash_complete powerbash
 
 # save system PS1
-if [ -z "$POWERLINE_ORG_PS1" ]; then POWERLINE_ORG_PS1=$PS1; fi
+if [ -z "$POWERBASH_ORG_PS1" ]; then POWERBASH_ORG_PS1=$PS1; fi
 
 # set default variables
-POWERLINE_SHORT_NUM=20
+POWERBASH_SHORT_NUM=20
 
 
 powerbash() {
     case "$@" in
         "on")
-          export PROMPT_COMMAND=__powerline_ps1-on
+          export PROMPT_COMMAND=__powerbash_ps1-on
           ;;
         "off")
-          export PROMPT_COMMAND=__powerline_ps1-off
+          export PROMPT_COMMAND=__powerbash_ps1-off
           ;;
         "system")
-          export PROMPT_COMMAND=__powerline_ps1-system
+          export PROMPT_COMMAND=__powerbash_ps1-system
           ;;
         "reload")
           source ~/.bashrc
           ;;
         "path on")
-          export POWERLINE_PATH=pwd
+          export POWERBASH_PATH=pwd
           ;;
         "path off")
-          export POWERLINE_PATH=off
+          export POWERBASH_PATH=off
           ;;
         "path short-path")
-          export POWERLINE_PATH=shortpath
+          export POWERBASH_PATH=shortpath
           ;;
         "path short-path add"*)
-          __powerline_short_num_change add $4
+          __powerbash_short_num_change add $4
           ;;
         "path short-path subtract"*)
-          __powerline_short_num_change subtract $4
+          __powerbash_short_num_change subtract $4
           ;;
         "path short-directory")
-          export POWERLINE_PATH=shortdir
+          export POWERBASH_PATH=shortdir
           ;;
         *)
           echo "invalid option"
@@ -154,7 +154,7 @@ __powerbash() {
     #BG_CYAN="\[$(tput setab 6)\]"
     #BG_GREEN="\[$(tput setab 2)\]"
 
-    __powerline_git_info() { 
+    __powerbash_git_info() { 
         [ -x "$(which git)" ] || return    # git not found
 
         # get current branch name or short SHA1 hash for detached head
@@ -177,7 +177,7 @@ __powerbash() {
         printf "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET"
     }
 
-    __powerline_user_display() {
+    __powerbash_user_display() {
         # check if running sudo
         if [ -z "$SUDO_USER" ]; then
             local IS_SUDO=""
@@ -194,7 +194,7 @@ __powerbash() {
         printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
     }
 
-    __powerline_short_dir() {
+    __powerbash_short_dir() {
         local DIR_SPLIT_COUNT=4
         IFS='/' read -a DIR_ARRAY <<< "$PWD"
         if [ ${#DIR_ARRAY[@]} -gt $DIR_SPLIT_COUNT ]; then
@@ -208,8 +208,8 @@ __powerbash() {
         printf "$SHORT_DIR"
     }
 
-    __powerline_short_path() {
-        local SHORT_NUM="$POWERLINE_SHORT_NUM"
+    __powerbash_short_path() {
+        local SHORT_NUM="$POWERBASH_SHORT_NUM"
         if (( ${#PWD} > $SHORT_NUM )); then
             local SHORT_PATH="..${PWD: -$SHORT_NUM}"
         else
@@ -220,7 +220,7 @@ __powerbash() {
         fi
         printf "$SHORT_PATH"
    }
-   __powerline_short_num_change() {
+   __powerbash_short_num_change() {
         local NUMBER_DEFAULT=1
         if [ -z "$2" ];then
             NUMBER=$NUMBER_DEFAULT
@@ -228,29 +228,29 @@ __powerbash() {
             NUMBER=$2
         fi
         if [ "$1" == "add" ]; then
-            ((POWERLINE_SHORT_NUM+=$NUMBER))
+            ((POWERBASH_SHORT_NUM+=$NUMBER))
         fi
         if [ "$1" == "subtract" ]; then
-            ((POWERLINE_SHORT_NUM-=$NUMBER))
+            ((POWERBASH_SHORT_NUM-=$NUMBER))
         fi
    }
 
-   __powerline_dir_display() {
-        if [ "$POWERLINE_PATH" == "shortdir" ]; then
-          local DIR_DISPLAY=$(__powerline_short_dir)
-        elif [ "$POWERLINE_PATH" == "shortpath" ]; then
-          local DIR_DISPLAY=$(__powerline_short_path)
-        elif [ "$POWERLINE_PATH" == "pwd" ]; then
+   __powerbash_dir_display() {
+        if [ "$POWERBASH_PATH" == "shortdir" ]; then
+          local DIR_DISPLAY=$(__powerbash_short_dir)
+        elif [ "$POWERBASH_PATH" == "shortpath" ]; then
+          local DIR_DISPLAY=$(__powerbash_short_path)
+        elif [ "$POWERBASH_PATH" == "pwd" ]; then
           local DIR_DISPLAY=$PWD
-        elif [ "$POWERLINE_PATH" == "off" ]; then
+        elif [ "$POWERBASH_PATH" == "off" ]; then
           local DIR_DISPLAY=""
         else
-          local DIR_DISPLAY=$(__powerline_short_dir)
+          local DIR_DISPLAY=$(__powerbash_short_dir)
         fi
         printf "$COLOR_DIR $DIR_DISPLAY $RESET"
    }
 
-   __powerline_jobs_display() {
+   __powerbash_jobs_display() {
         local JOBS="$(jobs | wc -l)"
         if [ "$JOBS" -ne "0" ]; then
             local JOBS_DISPLAY="$COLOR_JOBS $JOBS $RESET"
@@ -260,7 +260,7 @@ __powerbash() {
         printf "$JOBS_DISPLAY"
    }
 
-   __powerline_symbol_display() {
+   __powerbash_symbol_display() {
         # check if root or regular user
         if [ $EUID -ne 0 ]; then
             local SYMBOL_BG=$COLOR_SYMBOL_USER
@@ -272,7 +272,7 @@ __powerbash() {
         printf "$SYMBOL_BG $SYMBOL $RESET"
    }
 
-   __powerline_rc_display() {
+   __powerbash_rc_display() {
         # check the exit code of the previous command and display different
         local rc=$1
         if [ $rc -ne 0 ]; then
@@ -283,32 +283,32 @@ __powerbash() {
         printf "$RC_DISPLAY"
    }
 
-    __powerline_ps1-system() {
+    __powerbash_ps1-system() {
         # set prompt
-        PS1=$POWERLINE_ORG_PS1 
+        PS1=$POWERBASH_ORG_PS1 
     }
 
-    __powerline_ps1-off() {
+    __powerbash_ps1-off() {
         # set prompt
         PS1="$ "
     }
 
-    __powerline_ps1-on() {
+    __powerbash_ps1-on() {
         # capture latest return code
         local RETURN_CODE=$?
 
         # set prompt
         PS1=""
-        PS1+="$(__powerline_user_display)"
-        PS1+="$(__powerline_dir_display)"
-        PS1+="$(__powerline_git_info)"
-        PS1+="$(__powerline_jobs_display)"
-        PS1+="$(__powerline_symbol_display)"
-        PS1+="$(__powerline_rc_display ${RETURN_CODE})"
+        PS1+="$(__powerbash_user_display)"
+        PS1+="$(__powerbash_dir_display)"
+        PS1+="$(__powerbash_git_info)"
+        PS1+="$(__powerbash_jobs_display)"
+        PS1+="$(__powerbash_symbol_display)"
+        PS1+="$(__powerbash_rc_display ${RETURN_CODE})"
         PS1+=" "
     }
 
-    PROMPT_COMMAND=__powerline_ps1-on
+    PROMPT_COMMAND=__powerbash_ps1-on
 }
 
 __powerbash
