@@ -16,8 +16,8 @@ __powerline() {
     # unicode symbols
     ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
     ARROWS=( "⇠" "⇡" "⇢" "⇣" )
-    PS_SYMBOL_USER='$'
-    PS_SYMBOL_ROOT='#'
+    SYMBOL_USER='$'
+    SYMBOL_ROOT='#'
     GIT_BRANCH_SYMBOL=${ICONS[1]}
     GIT_BRANCH_CHANGED_SYMBOL='+'
     GIT_NEED_PUSH_SYMBOL=${ARROWS[1]}
@@ -37,8 +37,8 @@ __powerline() {
     COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
     COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
     COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
-    COLOR_PS_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
-    COLOR_PS_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
+    COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
+    COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
 
     # solarized colorscheme
     #FG_BASE03="\[$(tput setaf 8)\]"
@@ -166,16 +166,16 @@ __powerline() {
         printf "$JOBS_DISPLAY"
    }
 
-   __ps_display() {
+   __symbol_display() {
         # check if root or regular user
         if [ $EUID -ne 0 ]; then
-            local PS_SYMBOL_BG=$COLOR_PS_USER
-            local PS_SYMBOL=$PS_SYMBOL_USER
+            local SYMBOL_BG=$COLOR_SYMBOL_USER
+            local SYMBOL=$SYMBOL_USER
         else
-            local PS_SYMBOL_BG=$COLOR_PS_ROOT
-            local PS_SYMBOL=$PS_SYMBOL_ROOT
+            local SYMBOL_BG=$COLOR_SYMBOL_ROOT
+            local SYMBOL=$SYMBOL_ROOT
         fi
-        printf "$PS_SYMBOL_BG $PS_SYMBOL $RESET"
+        printf "$SYMBOL_BG $SYMBOL $RESET"
    }
 
    __rc_display() {
@@ -209,7 +209,7 @@ __powerline() {
         PS1+="$(__dir_display)"
         PS1+="$(__git_info)"
         PS1+="$(__jobs_display)"
-        PS1+="$(__ps_display)"
+        PS1+="$(__symbol_display)"
         PS1+="$(__rc_display ${RETURN_CODE})"
         PS1+=" "
     }
