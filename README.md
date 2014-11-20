@@ -24,9 +24,9 @@ Powerline-style Bash prompt in pure Bash script.
 
 Download the Bash script
 
-    curl -L https://raw.github.com/napalm255/bash-powerline/master/bash-powerline.sh > ~/.bash-powerline.sh
+    curl -L https://raw.github.com/napalm255/powerbash/master/powerbash.sh > ~/.powerbash.sh
 
 And source it in your `.bashrc`
 
-    source ~/.bash-powerline.sh
+    source ~/.powerbash.sh
 
