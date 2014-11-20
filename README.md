@@ -1,6 +1,6 @@
-# bash-powerline
+# powerbash
 
-Powerline for Bash in pure Bash script. 
+Powerline-style Bash prompt in pure Bash script. 
 
 
 ## Features
