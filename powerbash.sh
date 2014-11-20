@@ -1,21 +1,94 @@
 #!/usr/bin/env bash
 
-POWERLINE_ORG_PS1=$PS1
+# enable auto completion
+complete -F __powerbash_complete powerbash
+
+# save system PS1
+if [ -z "$POWERLINE_ORG_PS1" ]; then POWERLINE_ORG_PS1=$PS1; fi
+
+# set default variables
 POWERLINE_SHORT_NUM=20
 
-alias prompt_path_shortdir="export POWERLINE_PATH=shortdir"
-alias prompt_path_shortpwd="export POWERLINE_PATH=shortpath"
-alias prompt_path_shortpwd_add="__powerline_short_num_change add"
-alias prompt_path_shortpwd_subtract="__powerline_short_num_change subtract"
-alias prompt_path_pwd="export POWERLINE_PATH=pwd"
-alias prompt_path_off="export POWERLINE_PATH=off"
 
-alias prompt_reload="source ~/.bashrc"
-alias prompt_default="export PROMPT_COMMAND=__powerline_ps1-default"
-alias prompt_off="export PROMPT_COMMAND=__powerline_ps1-off"
-alias prompt_on="export PROMPT_COMMAND=__powerline_ps1-on"
+powerbash() {
+    case "$@" in
+        "on")
+          export PROMPT_COMMAND=__powerline_ps1-on
+          ;;
+        "off")
+          export PROMPT_COMMAND=__powerline_ps1-off
+          ;;
+        "system")
+          export PROMPT_COMMAND=__powerline_ps1-system
+          ;;
+        "reload")
+          source ~/.bashrc
+          ;;
+        "path on")
+          export POWERLINE_PATH=pwd
+          ;;
+        "path off")
+          export POWERLINE_PATH=off
+          ;;
+        "path short-path")
+          export POWERLINE_PATH=shortpath
+          ;;
+        "path short-path add"*)
+          __powerline_short_num_change add $4
+          ;;
+        "path short-path subtract"*)
+          __powerline_short_num_change subtract $4
+          ;;
+        "path short-directory")
+          export POWERLINE_PATH=shortdir
+          ;;
+        *)
+          echo "invalid option"
+    esac
+}
 
-__powerline() {
+__powerbash_complete() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="on off system reload path"
+ 
+    case "${prev}" in
+        on)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        off)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        system)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        reload)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        path)
+            COMPREPLY=( $(compgen -W "on off short-path short-directory" -- ${cur}) )
+            return 0
+            ;;
+        "short-path")
+            COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
+            return 0
+            ;;
+        *)
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            ;;
+    esac
+
+}
+
+
+__powerbash() {
 
     # unicode symbols
     ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
@@ -210,7 +283,7 @@ __powerline() {
         printf "$RC_DISPLAY"
    }
 
-    __powerline_ps1-default() {
+    __powerline_ps1-system() {
         # set prompt
         PS1=$POWERLINE_ORG_PS1 
     }
@@ -238,5 +311,5 @@ __powerline() {
     PROMPT_COMMAND=__powerline_ps1-on
 }
 
-__powerline
-unset __powerline
+__powerbash
+unset __powerbash
