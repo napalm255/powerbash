@@ -15,12 +15,14 @@ alias prompt_on="export PROMPT_COMMAND=ps1_on"
 __powerline() {
 
     # Unicode symbols
+    ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
+    ARROWS=( "⇠" "⇡" "⇢" "⇣" )
     PS_SYMBOL_USER='$'
     PS_SYMBOL_ROOT='#'
-    GIT_BRANCH_SYMBOL='»'
+    GIT_BRANCH_SYMBOL=${ICONS[1]}
     GIT_BRANCH_CHANGED_SYMBOL='+'
-    GIT_NEED_PUSH_SYMBOL='⇡'
-    GIT_NEED_PULL_SYMBOL='⇣'
+    GIT_NEED_PUSH_SYMBOL=${ARROWS[1]}
+    GIT_NEED_PULL_SYMBOL=${ARROWS[3]}
 
     # Solarized colorscheme
     FG_BASE03="\[$(tput setaf 8)\]"
