@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 
 POWERLINE_ORG_PS1=$PS1
+POWERLINE_SHORT_NUM=20
 
-alias prompt_short_dir="export POWERLINE_SHORT=dir"
-alias prompt_short_path="export POWERLINE_SHORT=path"
-alias prompt_short_off="export POWERLINE_SHORT=off"
+alias prompt_path_shortdir="export POWERLINE_PATH=shortdir"
+alias prompt_path_shortpwd="export POWERLINE_PATH=shortpath"
+alias prompt_path_shortpwd_add="__powerline_short_num_change add"
+alias prompt_path_shortpwd_subtract="__powerline_short_num_change subtract"
+alias prompt_path_pwd="export POWERLINE_PATH=pwd"
+alias prompt_path_off="export POWERLINE_PATH=off"
 
 alias prompt_reload="source ~/.bashrc"
-alias prompt_default="export PROMPT_COMMAND=ps1_default"
-alias prompt_off="export PROMPT_COMMAND=ps1_off"
-alias prompt_on="export PROMPT_COMMAND=ps1_on"
+alias prompt_default="export PROMPT_COMMAND=__powerline_ps1-default"
+alias prompt_off="export PROMPT_COMMAND=__powerline_ps1-off"
+alias prompt_on="export PROMPT_COMMAND=__powerline_ps1-on"
 
 __powerline() {
 
@@ -77,7 +81,7 @@ __powerline() {
     #BG_CYAN="\[$(tput setab 6)\]"
     #BG_GREEN="\[$(tput setab 2)\]"
 
-    __git_info() { 
+    __powerline_git_info() { 
         [ -x "$(which git)" ] || return    # git not found
 
         # get current branch name or short SHA1 hash for detached head
@@ -100,7 +104,7 @@ __powerline() {
         printf "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET"
     }
 
-    __user_display() {
+    __powerline_user_display() {
         # check if running sudo
         if [ -z "$SUDO_USER" ]; then
             local IS_SUDO=""
@@ -117,7 +121,7 @@ __powerline() {
         printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
     }
 
-    __short_dir() {
+    __powerline_short_dir() {
         local DIR_SPLIT_COUNT=4
         IFS='/' read -a DIR_ARRAY <<< "$PWD"
         if [ ${#DIR_ARRAY[@]} -gt $DIR_SPLIT_COUNT ]; then
@@ -131,8 +135,8 @@ __powerline() {
         printf "$SHORT_DIR"
     }
 
-    __short_path() {
-        local SHORT_NUM=20
+    __powerline_short_path() {
+        local SHORT_NUM="$POWERLINE_SHORT_NUM"
         if (( ${#PWD} > $SHORT_NUM )); then
             local SHORT_PATH="..${PWD: -$SHORT_NUM}"
         else
@@ -143,21 +147,37 @@ __powerline() {
         fi
         printf "$SHORT_PATH"
    }
-
-   __dir_display() {
-        if [ "$POWERLINE_SHORT" == "dir" ]; then
-          local DIR_DISPLAY=$(__short_dir)
-        elif [ "$POWERLINE_SHORT" == "path" ]; then
-          local DIR_DISPLAY=$(__short_path)
-        elif [ "$POWERLINE_SHORT" == "off" ]; then
-          local DIR_DISPLAY=$PWD
+   __powerline_short_num_change() {
+        local NUMBER_DEFAULT=1
+        if [ -z "$2" ];then
+            NUMBER=$NUMBER_DEFAULT
         else
-          local DIR_DISPLAY=$(__short_dir)
+            NUMBER=$2
+        fi
+        if [ "$1" == "add" ]; then
+            ((POWERLINE_SHORT_NUM+=$NUMBER))
+        fi
+        if [ "$1" == "subtract" ]; then
+            ((POWERLINE_SHORT_NUM-=$NUMBER))
+        fi
+   }
+
+   __powerline_dir_display() {
+        if [ "$POWERLINE_PATH" == "shortdir" ]; then
+          local DIR_DISPLAY=$(__powerline_short_dir)
+        elif [ "$POWERLINE_PATH" == "shortpath" ]; then
+          local DIR_DISPLAY=$(__powerline_short_path)
+        elif [ "$POWERLINE_PATH" == "pwd" ]; then
+          local DIR_DISPLAY=$PWD
+        elif [ "$POWERLINE_PATH" == "off" ]; then
+          local DIR_DISPLAY=""
+        else
+          local DIR_DISPLAY=$(__powerline_short_dir)
         fi
         printf "$COLOR_DIR $DIR_DISPLAY $RESET"
    }
 
-   __jobs_display() {
+   __powerline_jobs_display() {
         local JOBS="$(jobs | wc -l)"
         if [ "$JOBS" -ne "0" ]; then
             local JOBS_DISPLAY="$COLOR_JOBS $JOBS $RESET"
@@ -167,7 +187,7 @@ __powerline() {
         printf "$JOBS_DISPLAY"
    }
 
-   __symbol_display() {
+   __powerline_symbol_display() {
         # check if root or regular user
         if [ $EUID -ne 0 ]; then
             local SYMBOL_BG=$COLOR_SYMBOL_USER
@@ -179,7 +199,7 @@ __powerline() {
         printf "$SYMBOL_BG $SYMBOL $RESET"
    }
 
-   __rc_display() {
+   __powerline_rc_display() {
         # check the exit code of the previous command and display different
         local rc=$1
         if [ $rc -ne 0 ]; then
@@ -190,32 +210,32 @@ __powerline() {
         printf "$RC_DISPLAY"
    }
 
-    ps1_default() {
+    __powerline_ps1-default() {
         # set prompt
         PS1=$POWERLINE_ORG_PS1 
     }
 
-    ps1_off() {
+    __powerline_ps1-off() {
         # set prompt
         PS1="$ "
     }
 
-    ps1_on() {
+    __powerline_ps1-on() {
         # capture latest return code
         local RETURN_CODE=$?
 
         # set prompt
         PS1=""
-        PS1+="$(__user_display)"
-        PS1+="$(__dir_display)"
-        PS1+="$(__git_info)"
-        PS1+="$(__jobs_display)"
-        PS1+="$(__symbol_display)"
-        PS1+="$(__rc_display ${RETURN_CODE})"
+        PS1+="$(__powerline_user_display)"
+        PS1+="$(__powerline_dir_display)"
+        PS1+="$(__powerline_git_info)"
+        PS1+="$(__powerline_jobs_display)"
+        PS1+="$(__powerline_symbol_display)"
+        PS1+="$(__powerline_rc_display ${RETURN_CODE})"
         PS1+=" "
     }
 
-    PROMPT_COMMAND=ps1_on
+    PROMPT_COMMAND=__powerline_ps1-on
 }
 
 __powerline
