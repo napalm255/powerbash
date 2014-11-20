@@ -245,6 +245,8 @@ __powerbash() {
    __powerbash_dir_display() {
         if [ "$POWERBASH_PATH" == "off" ]; then
           local DIR_DISPLAY=""
+        elif [ "$PWD" == "/" ]; then
+          local DIR_DISPLAY="/"
         elif [ "$HOME" == "$PWD" ]; then
           local DIR_DISPLAY="~"
         elif [ "$POWERBASH_PATH" == "full" ]; then
