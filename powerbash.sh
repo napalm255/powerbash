@@ -24,23 +24,32 @@ powerbash() {
         "reload")
           source ~/.bashrc
           ;;
-        "path on")
-          export POWERBASH_PATH=pwd
+        "user on")
+          export POWERBASH_USER="on"
+          ;;
+        "user off")
+          export POWERBASH_USER="off"
           ;;
         "path off")
-          export POWERBASH_PATH=off
+          export POWERBASH_PATH="off"
+          ;;
+        "path full")
+          export POWERBASH_PATH="full"
+          ;;
+        "path working-directory")
+          export POWERBASH_PATH="working-directory"
+          ;;
+        "path short-directory")
+          export POWERBASH_PATH="short-directory"
           ;;
         "path short-path")
-          export POWERBASH_PATH=shortpath
+          export POWERBASH_PATH="short-path"
           ;;
         "path short-path add"*)
           __powerbash_short_num_change add $4
           ;;
         "path short-path subtract"*)
           __powerbash_short_num_change subtract $4
-          ;;
-        "path short-directory")
-          export POWERBASH_PATH=shortdir
           ;;
         *)
           echo "invalid option"
@@ -53,7 +62,7 @@ __powerbash_complete()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="on off system reload path"
+    opts="on off system reload path user"
  
     case "${prev}" in
         on)
@@ -72,8 +81,12 @@ __powerbash_complete()
             COMPREPLY=( $(compgen ${cur}) )
             return 0
             ;;
+        user)
+            COMPREPLY=( $(compgen -W "off on" -- ${cur}) )
+            return 0
+            ;;
         path)
-            COMPREPLY=( $(compgen -W "on off short-path short-directory" -- ${cur}) )
+            COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
             return 0
             ;;
         "short-path")
@@ -191,7 +204,7 @@ __powerbash() {
         else
             local IS_SSH=""
         fi
-        printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
+        if [ "$POWERBASH_USER" != "off" ]; then printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"; fi
     }
 
     __powerbash_short_dir() {
@@ -202,9 +215,6 @@ __powerbash() {
         else
             local SHORT_DIR="$PWD"
         fi
-        if [ "$HOME" == "$PWD" ]; then
-            local SHORT_DIR="~"
-        fi
         printf "$SHORT_DIR"
     }
 
@@ -214,9 +224,6 @@ __powerbash() {
             local SHORT_PATH="..${PWD: -$SHORT_NUM}"
         else
             local SHORT_PATH=$PWD
-        fi
-        if [ "$HOME" == "$PWD" ]; then
-            local SHORT_PATH="~"
         fi
         printf "$SHORT_PATH"
    }
@@ -236,18 +243,22 @@ __powerbash() {
    }
 
    __powerbash_dir_display() {
-        if [ "$POWERBASH_PATH" == "shortdir" ]; then
-          local DIR_DISPLAY=$(__powerbash_short_dir)
-        elif [ "$POWERBASH_PATH" == "shortpath" ]; then
-          local DIR_DISPLAY=$(__powerbash_short_path)
-        elif [ "$POWERBASH_PATH" == "pwd" ]; then
-          local DIR_DISPLAY=$PWD
-        elif [ "$POWERBASH_PATH" == "off" ]; then
+        if [ "$POWERBASH_PATH" == "off" ]; then
           local DIR_DISPLAY=""
-        else
+        elif [ "$HOME" == "$PWD" ]; then
+          local DIR_DISPLAY="~"
+        elif [ "$POWERBASH_PATH" == "full" ]; then
+          local DIR_DISPLAY=$PWD
+        elif [ "$POWERBASH_PATH" == "working-directory" ]; then
+          local DIR_DISPLAY="${PWD##*/}"
+        elif [ "$POWERBASH_PATH" == "short-directory" ]; then
           local DIR_DISPLAY=$(__powerbash_short_dir)
+        elif [ "$POWERBASH_PATH" == "short-path" ]; then
+          local DIR_DISPLAY=$(__powerbash_short_path)
+        else
+          local DIR_DISPLAY="${PWD##*/}"
         fi
-        printf "$COLOR_DIR $DIR_DISPLAY $RESET"
+        if [ "$DIR_DISPLAY" != "" ]; then printf "$COLOR_DIR $DIR_DISPLAY $RESET"; fi
    }
 
    __powerbash_jobs_display() {
