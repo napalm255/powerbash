@@ -158,8 +158,9 @@ __powerline() {
    }
 
    __jobs_display() {
-        if [ "$(jobs | wc -l)" -ne "0" ]; then
-            local JOBS_DISPLAY="$COLOR_JOBS $(jobs | wc -l) $RESET"
+        local JOBS="$(jobs | wc -l)"
+        if [ "$JOBS" -ne "0" ]; then
+            local JOBS_DISPLAY="$COLOR_JOBS $JOBS $RESET"
         else
             local JOBS_DISPLAY=""
         fi
