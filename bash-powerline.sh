@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
 POWERLINE_ORG_PS1=$PS1
+POWERLINE_SHORT_NUM=20
 
-alias prompt_short_dir="export POWERLINE_SHORT=dir"
-alias prompt_short_path="export POWERLINE_SHORT=path"
-alias prompt_short_off="export POWERLINE_SHORT=off"
+alias prompt_path_shortdir="export POWERLINE_PATH=shortdir"
+alias prompt_path_shortpwd="export POWERLINE_PATH=shortpath"
+alias prompt_path_pwd="export POWERLINE_PATH=pwd"
+alias prompt_path_off="export POWERLINE_PATH=off"
+alias prompt_path_shortpwd_add="__short_num_change add"
+alias prompt_path_shortpwd_subtract="__short_num_change subtract"
 
 alias prompt_reload="source ~/.bashrc"
 alias prompt_default="export PROMPT_COMMAND=ps1_default"
@@ -132,7 +136,7 @@ __powerline() {
     }
 
     __short_path() {
-        local SHORT_NUM=20
+        local SHORT_NUM="$POWERLINE_SHORT_NUM"
         if (( ${#PWD} > $SHORT_NUM )); then
             local SHORT_PATH="..${PWD: -$SHORT_NUM}"
         else
@@ -143,14 +147,30 @@ __powerline() {
         fi
         printf "$SHORT_PATH"
    }
+   __short_num_change() {
+        local NUMBER_DEFAULT=1
+        if [ -z "$2" ];then
+            NUMBER=$NUMBER_DEFAULT
+        else
+            NUMBER=$2
+        fi
+        if [ "$1" == "add" ]; then
+            ((POWERLINE_SHORT_NUM+=$NUMBER))
+        fi
+        if [ "$1" == "subtract" ]; then
+            ((POWERLINE_SHORT_NUM-=$NUMBER))
+        fi
+   }
 
    __dir_display() {
-        if [ "$POWERLINE_SHORT" == "dir" ]; then
+        if [ "$POWERLINE_PATH" == "shortdir" ]; then
           local DIR_DISPLAY=$(__short_dir)
-        elif [ "$POWERLINE_SHORT" == "path" ]; then
+        elif [ "$POWERLINE_PATH" == "shortpath" ]; then
           local DIR_DISPLAY=$(__short_path)
-        elif [ "$POWERLINE_SHORT" == "off" ]; then
+        elif [ "$POWERLINE_PATH" == "pwd" ]; then
           local DIR_DISPLAY=$PWD
+        elif [ "$POWERLINE_PATH" == "off" ]; then
+          local DIR_DISPLAY=""
         else
           local DIR_DISPLAY=$(__short_dir)
         fi
