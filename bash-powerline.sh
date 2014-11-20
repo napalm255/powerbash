@@ -1,19 +1,46 @@
 #!/usr/bin/env bash
 
-POWERLINE_ORG_PS1=$PS1
+if [ -z "$POWERLINE_ORG_PS1" ]; then POWERLINE_ORG_PS1=$PS1; fi
 POWERLINE_SHORT_NUM=20
 
-alias prompt_path_shortdir="export POWERLINE_PATH=shortdir"
-alias prompt_path_shortpwd="export POWERLINE_PATH=shortpath"
-alias prompt_path_shortpwd_add="__powerline_short_num_change add"
-alias prompt_path_shortpwd_subtract="__powerline_short_num_change subtract"
-alias prompt_path_pwd="export POWERLINE_PATH=pwd"
-alias prompt_path_off="export POWERLINE_PATH=off"
-
-alias prompt_reload="source ~/.bashrc"
-alias prompt_default="export PROMPT_COMMAND=__powerline_ps1-default"
-alias prompt_off="export PROMPT_COMMAND=__powerline_ps1-off"
-alias prompt_on="export PROMPT_COMMAND=__powerline_ps1-on"
+prompt() {
+    echo $@
+    case "$@" in
+        "on")
+          export PROMPT_COMMAND=__powerline_ps1-on
+          ;;
+        "off")
+          export PROMPT_COMMAND=__powerline_ps1-off
+          ;;
+        "system")
+          export PROMPT_COMMAND=__powerline_ps1-system
+          ;;
+        "reload")
+          source ~/.bashrc
+          source /etc/bash_completion.d/prompt
+          ;;
+        "path on")
+          export POWERLINE_PATH=pwd
+          ;;
+        "path off")
+          export POWERLINE_PATH=off
+          ;;
+        "path short-path")
+          export POWERLINE_PATH=shortpath
+          ;;
+        "path short-path add"*)
+          __powerline_short_num_change add $4
+          ;;
+        "path short-path subtract"*)
+          __powerline_short_num_change subtract $4
+          ;;
+        "path short-directory")
+          export POWERLINE_PATH=shortdir
+          ;;
+        *)
+          echo "invalid option"
+    esac
+}
 
 __powerline() {
 
@@ -210,7 +237,7 @@ __powerline() {
         printf "$RC_DISPLAY"
    }
 
-    __powerline_ps1-default() {
+    __powerline_ps1-system() {
         # set prompt
         PS1=$POWERLINE_ORG_PS1 
     }
