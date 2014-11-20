@@ -4,7 +4,6 @@ if [ -z "$POWERLINE_ORG_PS1" ]; then POWERLINE_ORG_PS1=$PS1; fi
 POWERLINE_SHORT_NUM=20
 
 prompt() {
-    echo $@
     case "$@" in
         "on")
           export PROMPT_COMMAND=__powerline_ps1-on
