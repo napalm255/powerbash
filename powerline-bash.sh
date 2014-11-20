@@ -3,7 +3,7 @@
 if [ -z "$POWERLINE_ORG_PS1" ]; then POWERLINE_ORG_PS1=$PS1; fi
 POWERLINE_SHORT_NUM=20
 
-prompt() {
+powerline-bash() {
     case "$@" in
         "on")
           export PROMPT_COMMAND=__powerline_ps1-on
@@ -16,7 +16,7 @@ prompt() {
           ;;
         "reload")
           source ~/.bashrc
-          source /etc/bash_completion.d/prompt
+          source /etc/bash_completion.d/powerline-completion.sh
           ;;
         "path on")
           export POWERLINE_PATH=pwd

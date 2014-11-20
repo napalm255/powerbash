@@ -3,7 +3,7 @@
 #
 #  Completion for bash-powerline:
 #
-_prompt_complete() 
+_powerline_complete() 
 {
     local cur prev opts
     COMPREPLY=()
@@ -42,4 +42,4 @@ _prompt_complete()
     esac
 
 }
-complete -F _prompt_complete prompt
+complete -F _powerline_complete powerline-bash
