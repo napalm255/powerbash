@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 
+# enable auto completion
+complete -F __powerbash_complete powerbash
+
+# save system PS1
 if [ -z "$POWERLINE_ORG_PS1" ]; then POWERLINE_ORG_PS1=$PS1; fi
+
+# set default variables
 POWERLINE_SHORT_NUM=20
 
-powerline-bash() {
+
+powerbash() {
     case "$@" in
         "on")
           export PROMPT_COMMAND=__powerline_ps1-on
@@ -16,7 +23,6 @@ powerline-bash() {
           ;;
         "reload")
           source ~/.bashrc
-          source /etc/bash_completion.d/powerline-completion.sh
           ;;
         "path on")
           export POWERLINE_PATH=pwd
@@ -41,7 +47,48 @@ powerline-bash() {
     esac
 }
 
-__powerline() {
+__powerbash_complete() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="on off system reload path"
+ 
+    case "${prev}" in
+        on)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        off)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        system)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        reload)
+            COMPREPLY=( $(compgen ${cur}) )
+            return 0
+            ;;
+        path)
+            COMPREPLY=( $(compgen -W "on off short-path short-directory" -- ${cur}) )
+            return 0
+            ;;
+        "short-path")
+            COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
+            return 0
+            ;;
+        *)
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            ;;
+    esac
+
+}
+
+
+__powerbash() {
 
     # unicode symbols
     ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
@@ -264,5 +311,5 @@ __powerline() {
     PROMPT_COMMAND=__powerline_ps1-on
 }
 
-__powerline
-unset __powerline
+__powerbash
+unset __powerbash
