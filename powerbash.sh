@@ -64,40 +64,24 @@ __powerbash_complete()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     opts="on off system reload path user"
  
-    case "${prev}" in
-        on)
-            COMPREPLY=( $(compgen ${cur}) )
-            return 0
-            ;;
-        off)
-            COMPREPLY=( $(compgen ${cur}) )
-            return 0
-            ;;
-        system)
-            COMPREPLY=( $(compgen ${cur}) )
-            return 0
-            ;;
-        reload)
-            COMPREPLY=( $(compgen ${cur}) )
-            return 0
-            ;;
-        user)
-            COMPREPLY=( $(compgen -W "off on" -- ${cur}) )
-            return 0
-            ;;
-        path)
-            COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
-            return 0
-            ;;
-        "short-path")
-            COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
-            return 0
-            ;;
-        *)
-            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-            ;;
-    esac
-
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+    elif [ $COMP_CWORD -ge 2 ]; then
+        case "${prev}" in
+            "user")
+                COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
+                return 0
+                ;;
+            "path")
+                COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
+                return 0
+                ;;
+            "short-path")
+                COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
+                return 0
+                ;;
+        esac
+    fi
 }
 
 
