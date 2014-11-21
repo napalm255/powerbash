@@ -106,8 +106,6 @@ __powerbash() {
     # unicode symbols
     ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
     ARROWS=( "⇠" "⇡" "⇢" "⇣" )
-    SYMBOL_USER='$'
-    SYMBOL_ROOT='#'
     GIT_BRANCH_SYMBOL=${ICONS[1]}
     GIT_BRANCH_CHANGED_SYMBOL='+'
     GIT_NEED_PUSH_SYMBOL=${ARROWS[1]}
@@ -277,12 +275,10 @@ __powerbash() {
         # check if root or regular user
         if [ $EUID -ne 0 ]; then
             local SYMBOL_BG=$COLOR_SYMBOL_USER
-            local SYMBOL=$SYMBOL_USER
         else
             local SYMBOL_BG=$COLOR_SYMBOL_ROOT
-            local SYMBOL=$SYMBOL_ROOT
         fi
-        printf "$SYMBOL_BG $SYMBOL $RESET"
+        printf "$SYMBOL_BG \\$ $RESET"
    }
 
    __powerbash_rc_display() {
@@ -303,7 +299,7 @@ __powerbash() {
 
     __powerbash_ps1-off() {
         # set prompt
-        PS1="$ "
+        PS1='\$ '
     }
 
     __powerbash_ps1-on() {
