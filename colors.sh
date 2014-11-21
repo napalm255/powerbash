@@ -1,21 +1,15 @@
 #!/bin/bash
 
-RESET="$(tput sgr0)"
-X=0
-if [ "$1" == "bg" ]; then
-  while [ $X -lt 256 ]; do
-    COLOR="$(tput setab $X)"
-    echo "$COLOR    $X    "
-    let X=X+1
-  done
-fi
+for fgbg in 38 48 ; do #Foreground/Background
+	for color in {0..256} ; do #Colors
+		#Display the color
+		echo -en "\e[${fgbg};5;${color}m ${color}   \t\e[0m"
+		#Display 10 colors per lines
+		if [ $((($color + 1) % 10)) == 0 ] ; then
+			echo #New line
+		fi
+	done
+	echo #New line
+done
 
-if [ "$1" == "fg" ]; then
-  X=0
-  while [ $X -lt 256 ]; do
-    COLOR="$(tput setaf $X)"
-    echo "$COLOR    $X    "
-    let X=X+1
-  done
-fi
-echo "$RESET"
+exit 0
