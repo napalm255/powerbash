@@ -4,10 +4,10 @@
 complete -F __powerbash_complete powerbash
 
 # save system PS1
-if [ -z "$POWERBASH_SYSTEM_PS1" ]; then POWERBASH_SYSTEM_PS1=$PS1; fi
+[ -z "$POWERBASH_SYSTEM_PS1" ] && POWERBASH_SYSTEM_PS1=$PS1
 
 # set default variables
-if [ -z "$POWERBASH_SHORT_NUM" ]; then POWERBASH_SHORT_NUM=20; fi
+[ -z "$POWERBASH_SHORT_NUM" ] && POWERBASH_SHORT_NUM=20
 
 
 powerbash() {
@@ -170,7 +170,7 @@ __powerbash() {
     else
       local IS_SSH=""
     fi
-    if [ "$POWERBASH_USER" != "off" ]; then printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"; fi
+    [ "$POWERBASH_USER" != "off" ] && printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
   }
 
   __powerbash_short_dir() {
@@ -194,18 +194,11 @@ __powerbash() {
     printf "$SHORT_PATH"
  }
  __powerbash_short_num_change() {
-   local NUMBER_DEFAULT=1
-   if [ -z "$2" ];then
-     NUMBER=$NUMBER_DEFAULT
-   else
-     NUMBER=$2
-   fi
-   if [ "$1" == "add" ]; then
-     ((POWERBASH_SHORT_NUM+=$NUMBER))
-   fi
-   if [ "$1" == "subtract" ]; then
-     ((POWERBASH_SHORT_NUM-=$NUMBER))
-   fi
+   [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
+   [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
+   [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
+   [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
+   return 0
  }
 
  __powerbash_dir_display() {
