@@ -12,52 +12,40 @@ complete -F __powerbash_complete powerbash
 
 powerbash() {
   case "$@" in
-    "on")
-      export PROMPT_COMMAND=__powerbash_ps1-on
-      ;;
-    "off")
-      export PROMPT_COMMAND=__powerbash_ps1-off
-      ;;
-    "system")
-      export PROMPT_COMMAND=__powerbash_ps1-system
-      ;;
-    "reload")
+    on)
+     export PROMPT_COMMAND=__powerbash_ps1-on
+     ;;
+    off)
+     export PROMPT_COMMAND=__powerbash_ps1-off
+     ;;
+    system)
+     export PROMPT_COMMAND=__powerbash_ps1-system
+     ;;
+    reload)
       source ~/.bashrc
       ;;
-    "git on")
-      export POWERBASH_GIT="on"
+    user\ @(on|off))
+      export POWERBASH_USER="$2"
       ;;
-    "git off")
-      export POWERBASH_GIT="off"
+    path\ @(off|full|working-directory|short-directory|short-path))
+      export POWERBASH_PATH="$2"
       ;;
-    "user on")
-      export POWERBASH_USER="on"
+    path\ short-path\ @(add|subtract))
+      __powerbash_short_num_change $3 $4
       ;;
-    "user off")
-      export POWERBASH_USER="off"
+    git\ @(on|off))
+      export POWERBASH_GIT="$2"
       ;;
-    "path off")
-      export POWERBASH_PATH="off"
+    jobs\ @(on|off))
+      export POWERBASH_JOBS="$2"
       ;;
-    "path full")
-      export POWERBASH_PATH="full"
+    symbol\ @(on|off))
+      export POWERBASH_SYMBOL="off"
       ;;
-    "path working-directory")
-      export POWERBASH_PATH="working-directory"
+    rc\ @(on|off))
+      export POWERBASH_RC=""
       ;;
-    "path short-directory")
-      export POWERBASH_PATH="short-directory"
-      ;;
-    "path short-path")
-      export POWERBASH_PATH="short-path"
-      ;;
-    "path short-path add"*)
-      __powerbash_short_num_change add $4
-      ;;
-    "path short-path subtract"*)
-      __powerbash_short_num_change subtract $4
-      ;;
-    "term"*)
+    term*)
       export TERM=$2
       ;;
     *)
@@ -70,7 +58,7 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user term"
+  opts="on off system reload path user jobs git symbol term"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -86,6 +74,18 @@ __powerbash_complete() {
         ;;
       "short-path")
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
+        return 0
+        ;;
+      "jobs")
+        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
+        return 0
+        ;;
+      "git")
+        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
+        return 0
+        ;;
+      "symbol")
+        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
         return 0
         ;;
       "term")
@@ -140,7 +140,7 @@ __powerbash() {
   }
 
   __powerbash_git_info() { 
-    [ $"POWERBASH_GIT" == "off" ] && return # not displaying git
+    [ "$POWERBASH_GIT" == "off" ] && return # disable display
     [ -x "$(which git)" ] || return    # git not found
 
     # get current branch name or short SHA1 hash for detached head
@@ -164,8 +164,7 @@ __powerbash() {
   }
 
   __powerbash_user_display() {
-
-    [ "POWERBASH_USER" == "off" ] && return # not displaying user
+    [ "$POWERBASH_USER" == "off" ] && return # disable display
 
     # check if running sudo
     if [ -z "$SUDO_USER" ]; then
@@ -213,9 +212,9 @@ __powerbash() {
  }
 
  __powerbash_dir_display() {
-   if [ "$POWERBASH_PATH" == "off" ]; then
-     local DIR_DISPLAY=""
-   elif [ "$PWD" == "/" ]; then
+   [ "$POWERBASH_PATH" == "off" ] && return # disable display
+
+   if [ "$PWD" == "/" ]; then
      local DIR_DISPLAY="/"
    elif [ "$HOME" == "$PWD" ]; then
      local DIR_DISPLAY="~"
@@ -230,10 +229,12 @@ __powerbash() {
    else
      local DIR_DISPLAY="${PWD##*/}"
    fi
-   if [ "$DIR_DISPLAY" != "" ]; then printf "$COLOR_DIR $DIR_DISPLAY $RESET"; fi
+   printf "$COLOR_DIR $DIR_DISPLAY $RESET"
  }
 
  __powerbash_jobs_display() {
+   [ "$POWERBASH_JOBS" == "off" ] && return # disable display
+
    local JOBS="$(jobs | wc -l)"
    if [ "$JOBS" -ne "0" ]; then
      local JOBS_DISPLAY="$COLOR_JOBS $JOBS $RESET"
@@ -244,6 +245,8 @@ __powerbash() {
  }
 
  __powerbash_symbol_display() {
+   [ "$POWERBASH_SYMBOL" == "off" ] && return # disable display
+
    # check if root or regular user
    if [ $EUID -ne 0 ]; then
      local SYMBOL_BG=$COLOR_SYMBOL_USER
@@ -254,6 +257,8 @@ __powerbash() {
  }
 
  __powerbash_rc_display() {
+   [ "$POWERBASH_RC" == "off" ] && return # disable display
+
    # check the exit code of the previous command and display different
    local rc=$1
    if [ $rc -ne 0 ]; then
