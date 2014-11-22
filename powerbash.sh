@@ -106,16 +106,6 @@ __powerbash() {
   RESET="\[$(tput sgr0)\]"
   BOLD="\[$(tput bold)\]"
 
-  # color definitions
-  COLOR_USER="\[$(tput setaf 15)\]\[$(tput setab 8)\]"
-  COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
-  COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
-  COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 8)\]"
-  COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
-  COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
-  COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
-  COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
-  COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
 
   # solarized colorscheme
   #FG_BASE03="\[$(tput setaf 8)\]"
@@ -153,6 +143,33 @@ __powerbash() {
   #BG_BLUE="\[$(tput setab 4)\]"
   #BG_CYAN="\[$(tput setab 6)\]"
   #BG_GREEN="\[$(tput setab 2)\]"
+
+
+  __powerbash_theme() {
+  local theme=$1
+  if [ $theme == default8 ];then 
+    COLOR_USER="\[$(tput setaf 7)\]\[$(tput setab 4)\]"
+    COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 4)\]"
+    COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 4)\]"
+    COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 4)\]"
+    COLOR_GIT="\[$(tput setaf 7)\]\[$(tput setab 6)\]"
+    COLOR_RC="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
+    COLOR_JOBS="\[$(tput setaf 7)\]\[$(tput setab 5)\]"
+    COLOR_SYMBOL_USER="\[$(tput setaf 7)\]\[$(tput setab 2)\]"
+    COLOR_SYMBOL_ROOT="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
+  fi
+  if [ $theme == default256 ];then 
+    COLOR_USER="\[$(tput setaf 15)\]\[$(tput setab 8)\]"
+    COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
+    COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
+    COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 8)\]"
+    COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
+    COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
+    COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
+    COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
+    COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
+  fi
+  }
 
   __powerbash_git_info() { 
     [ -x "$(which git)" ] || return    # git not found
@@ -292,6 +309,13 @@ __powerbash() {
   }
 
   __powerbash_ps1-on() {
+    # find supported colors
+    if (( $(tput colors) < 256 )); then
+      __powerbash_theme "default8"
+    else
+      __powerbash_theme "default256"
+    fi
+
     # capture latest return code
     local RETURN_CODE=$?
 
