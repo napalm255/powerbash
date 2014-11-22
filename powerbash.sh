@@ -181,7 +181,7 @@ __powerbash() {
       local IS_SSH=""
     fi
 
-    printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
+    [ "$POWERBASH_USER" == "on" ] && printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
   }
 
   __powerbash_short_dir() {
