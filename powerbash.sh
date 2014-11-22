@@ -94,10 +94,10 @@ __powerbash_complete() {
 __powerbash() {
 
   # unicode symbols
-  ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
+  ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
   ARROWS=( "⇠" "⇡" "⇢" "⇣" )
   GIT_BRANCH_SYMBOL=${ICONS[1]}
-  GIT_BRANCH_CHANGED_SYMBOL='+'
+  GIT_BRANCH_CHANGED_SYMBOL=${ICONS[8]}
   GIT_NEED_PUSH_SYMBOL=${ARROWS[1]}
   GIT_NEED_PULL_SYMBOL=${ARROWS[3]}
 
