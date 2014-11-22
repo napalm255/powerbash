@@ -24,6 +24,12 @@ powerbash() {
     "reload")
       source ~/.bashrc
       ;;
+    "git on")
+      export POWERBASH_GIT="on"
+      ;;
+    "git off")
+      export POWERBASH_GIT="off"
+      ;;
     "user on")
       export POWERBASH_USER="on"
       ;;
@@ -134,6 +140,7 @@ __powerbash() {
   }
 
   __powerbash_git_info() { 
+    [ $"POWERBASH_GIT" == "off" ] && return # not displaying git
     [ -x "$(which git)" ] || return    # git not found
 
     # get current branch name or short SHA1 hash for detached head
@@ -157,6 +164,9 @@ __powerbash() {
   }
 
   __powerbash_user_display() {
+
+    [ "POWERBASH_USER" == "off" ] && return # not displaying user
+
     # check if running sudo
     if [ -z "$SUDO_USER" ]; then
       local IS_SUDO=""
@@ -170,7 +180,8 @@ __powerbash() {
     else
       local IS_SSH=""
     fi
-    [ "$POWERBASH_USER" != "off" ] && printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
+
+    printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
   }
 
   __powerbash_short_dir() {
