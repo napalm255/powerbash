@@ -83,7 +83,7 @@ __powerbash_complete() {
         return 0
         ;;
       "term")
-        COMPREPLY=( $(compgen -W "xterm xterm-256colors screen screen-256colors" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "xterm xterm-256color screen screen-256color" -- ${cur}) )
         return 0
         ;;
     esac
