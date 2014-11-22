@@ -145,30 +145,30 @@ __powerbash() {
   #BG_GREEN="\[$(tput setab 2)\]"
 
 
-  __powerbash_theme() {
-  local theme=$1
-  if [ $theme == default8 ];then 
-    COLOR_USER="\[$(tput setaf 7)\]\[$(tput setab 4)\]"
-    COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 4)\]"
-    COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 4)\]"
-    COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 4)\]"
-    COLOR_GIT="\[$(tput setaf 7)\]\[$(tput setab 6)\]"
-    COLOR_RC="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
-    COLOR_JOBS="\[$(tput setaf 7)\]\[$(tput setab 5)\]"
-    COLOR_SYMBOL_USER="\[$(tput setaf 7)\]\[$(tput setab 2)\]"
-    COLOR_SYMBOL_ROOT="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
-  fi
-  if [ $theme == default256 ];then 
-    COLOR_USER="\[$(tput setaf 15)\]\[$(tput setab 8)\]"
-    COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
-    COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
-    COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 8)\]"
-    COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
-    COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
-    COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
-    COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
-    COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
-  fi
+  __powerbash_colors() {
+    if (( $(tput colors) < 256 )); then
+      # 8 color support
+      COLOR_USER="\[$(tput setaf 7)\]\[$(tput setab 4)\]"
+      COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 4)\]"
+      COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 4)\]"
+      COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 4)\]"
+      COLOR_GIT="\[$(tput setaf 7)\]\[$(tput setab 6)\]"
+      COLOR_RC="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
+      COLOR_JOBS="\[$(tput setaf 7)\]\[$(tput setab 5)\]"
+      COLOR_SYMBOL_USER="\[$(tput setaf 7)\]\[$(tput setab 2)\]"
+      COLOR_SYMBOL_ROOT="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
+    else
+      # 256 color support
+      COLOR_USER="\[$(tput setaf 15)\]\[$(tput setab 8)\]"
+      COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
+      COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
+      COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 8)\]"
+      COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
+      COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
+      COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
+      COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
+      COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
+    fi
   }
 
   __powerbash_git_info() { 
@@ -309,15 +309,12 @@ __powerbash() {
   }
 
   __powerbash_ps1-on() {
-    # find supported colors
-    if (( $(tput colors) < 256 )); then
-      __powerbash_theme "default8"
-    else
-      __powerbash_theme "default256"
-    fi
-
+    # keep this at top!!!
     # capture latest return code
     local RETURN_CODE=$?
+    
+    # Check for supported colors
+    __powerbash_colors
 
     # set prompt
     PS1=""
