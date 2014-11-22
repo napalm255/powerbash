@@ -51,6 +51,9 @@ powerbash() {
     "path short-path subtract"*)
       __powerbash_short_num_change subtract $4
       ;;
+    "term"*)
+      export TERM=$2
+      ;;
     *)
       echo "invalid option"
   esac
@@ -61,7 +64,7 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user"
+  opts="on off system reload path user term"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -77,6 +80,10 @@ __powerbash_complete() {
         ;;
       "short-path")
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
+        return 0
+        ;;
+      "term")
+        COMPREPLY=( $(compgen -W "xterm xterm-256colors screen screen-256colors" -- ${cur}) )
         return 0
         ;;
     esac
