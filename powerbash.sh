@@ -40,10 +40,10 @@ powerbash() {
       export POWERBASH_JOBS="$2"
       ;;
     symbol\ @(on|off))
-      export POWERBASH_SYMBOL="off"
+      export POWERBASH_SYMBOL="$2"
       ;;
     rc\ @(on|off))
-      export POWERBASH_RC=""
+      export POWERBASH_RC="$2"
       ;;
     term*)
       export TERM=$2
@@ -58,7 +58,7 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user jobs git symbol term"
+  opts="on off system reload path user jobs git symbol rc term"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -85,6 +85,10 @@ __powerbash_complete() {
         return 0
         ;;
       "symbol")
+        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
+        return 0
+        ;;
+      "rc")
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
         return 0
         ;;
