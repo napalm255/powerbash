@@ -3,13 +3,6 @@
 # enable auto completion
 complete -F __powerbash_complete powerbash
 
-# save system PS1
-if [ -z "$POWERBASH_SYSTEM_PS1" ]; then POWERBASH_SYSTEM_PS1=$PS1; fi
-
-# set default variables
-if [ -z "$POWERBASH_SHORT_NUM" ]; then POWERBASH_SHORT_NUM=20; fi
-
-
 powerbash() {
   case "$@" in
     "on")
@@ -51,6 +44,9 @@ powerbash() {
     "path short-path subtract"*)
       __powerbash_short_num_change subtract $4
       ;;
+    "config"*)
+      __powerbash_config $2 $3
+      ;;
     "term"*)
       export TERM=$2
       ;;
@@ -64,7 +60,7 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user term"
+  opts="on off system reload path user term config"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -76,6 +72,14 @@ __powerbash_complete() {
         ;;
       "path")
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
+        return 0
+        ;;
+      "config")
+        COMPREPLY=( $(compgen -W "load-defaults load-config create-config" -- ${cur}) )
+        return 0
+        ;;
+      "create-config")
+        COMPREPLY=( $(compgen -W "overwrite" -- ${cur}) )
         return 0
         ;;
       "short-path")
@@ -92,6 +96,45 @@ __powerbash_complete() {
 
 
 __powerbash() {
+
+
+  __powerbash_config() {
+    POWERBASH_CONFIG_FILE="/home/napalm/.powerbash_config"
+    declare -A POWERBASH_CONFIG=(
+      [POWERBASH_PATH]="short-directoy"
+      [POWERBASH_USER]="on"
+      [POWERBASH_SHORT_NUM]=20
+    )
+    if [ -z "${POWERBASH_SYSTEM_PS1}" ]; then POWERBASH_CONFIG[POWERBASH_SYSTEM_PS1]="$PS1"; fi
+
+    case "$1" in
+      "load-defaults")
+        for K in "${!POWERBASH_CONFIG[@]}"; do
+          export $K="${POWERBASH_CONFIG[$K]}"
+        done
+        ;;
+      "load-config")
+        if [ -e "${POWERBASH_CONFIG_FILE}" ]; then
+          source ${POWERBASH_CONFIG_FILE}
+        else
+          __powerbash_config "load-defaults"
+        fi
+        ;;
+      "create-config")
+        if [ "$2" == "overwrite" ] || [ ! -e "${POWERBASH_CONFIG_FILE}" ]; then
+          echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
+          for K in "${!POWERBASH_CONFIG[@]}"; do
+            echo "$K=\"${POWERBASH_CONFIG[$K]}\"" >> ${POWERBASH_CONFIG_FILE}
+          done
+          cat ${POWERBASH_CONFIG_FILE}
+        else
+          return 1
+        fi
+        ;;
+    esac
+  }
+  __powerbash_config "load-defaults"
+
   # unicode symbols
   ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
   ARROWS=( "⇠" "⇡" "⇢" "⇣" )
@@ -144,7 +187,6 @@ __powerbash() {
   #BG_CYAN="\[$(tput setab 6)\]"
   #BG_GREEN="\[$(tput setab 2)\]"
 
-
   __powerbash_colors() {
     if (( $(tput colors) < 256 )); then
       # 8 color support
@@ -170,6 +212,7 @@ __powerbash() {
       COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
     fi
   }
+
 
   __powerbash_git_info() { 
     [ -x "$(which git)" ] || return    # git not found
@@ -327,7 +370,9 @@ __powerbash() {
     PS1+=" "
   }
 
+  # set prompt command
   PROMPT_COMMAND=__powerbash_ps1-on
+
 }
 
 __powerbash
