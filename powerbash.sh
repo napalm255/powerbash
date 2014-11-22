@@ -204,7 +204,7 @@ __powerbash() {
 
     # check if ssh session
     if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-      local IS_SSH="$COLOR_SSH@$HOSTNAME"
+      local IS_SSH="$COLOR_SSH@$(hostname -s)"
     else
       local IS_SSH=""
     fi
