@@ -26,7 +26,10 @@ Download the Bash script
 
     curl -L https://raw.github.com/napalm255/powerbash/master/powerbash.sh > ~/.powerbash.sh
 
-And source it in your `.bashrc`
+And source it in your `.bashrc` for your user account
 
     source ~/.powerbash.sh
 
+or for a global installation create a soft link in /etc/profiles.d
+
+    ln -s /etc/profiles.d/powerbash.sh ./powerbash.sh
