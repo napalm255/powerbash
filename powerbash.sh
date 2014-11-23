@@ -48,19 +48,15 @@ __powerbash_complete() {
     case "${prev}" in
       @(user|jobs|git|symbol|rc))
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-        return 0
         ;;
       path)
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
-        return 0
         ;;
       short-path)
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
-        return 0
         ;;
       term)
         COMPREPLY=( $(compgen -W "xterm xterm-256color screen screen-256color" -- ${cur}) )
-        return 0
         ;;
     esac
   fi
