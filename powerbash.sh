@@ -71,10 +71,26 @@ __powerbash_complete() {
 __powerbash() {
 
   __powerbash_config() {
-    POWERBASH_CONFIG_FILE="/home/napalm/.powerbash_config"
+    POWERBASH_CONFIG_FILE="$HOME/.powerbash_config"
+    POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
+    POWERBASH_ARROWS=( "⇠" "⇡" "⇢" "⇣" )
+    DIM="\[$(tput dim)\]"
+    REVERSE="\[$(tput rev)\]"
+    RESET="\[$(tput sgr0)\]"
+    BOLD="\[$(tput bold)\]"
+
     declare -A POWERBASH_CONFIG=(
-      [POWERBASH_PATH]="short-directoy"
+      [POWERBASH_GIT_BRANCH_SYMBOL]=${POWERBASH_ICONS[1]}
+      [POWERBASH_GIT_BRANCH_CHANGED_SYMBOL]=${POWERBASH_ICONS[8]}
+      [POWERBASH_GIT_NEED_PUSH_SYMBOL]=${POWERBASH_ARROWS[1]}
+      [POWERBASH_GIT_NEED_PULL_SYMBOL]=${POWERBASH_ARROWS[3]}
       [POWERBASH_USER]="on"
+      [POWERBASH_HOST]="off"
+      [POWERBASH_PATH]="short-directoy"
+      [POWERBASH_GIT]="on"
+      [POWERBASH_JOBS]="on"
+      [POWERBASH_SYMBOL]="on"
+      [POWERBASH_RC]="on"
       [POWERBASH_SHORT_NUM]=20
     )
     if [ -z "${POWERBASH_SYSTEM_PS1}" ]; then POWERBASH_CONFIG[POWERBASH_SYSTEM_PS1]="$PS1"; fi
@@ -87,38 +103,24 @@ __powerbash() {
         ;;
       "load-config")
         if [ -e "${POWERBASH_CONFIG_FILE}" ]; then
-          source ${POWERBASH_CONFIG_FILE}
-        else
-          __powerbash_config "load-defaults"
+          while read p; do
+            [[ ! "$p" =~ ^# ]] && export $p
+          done <${POWERBASH_CONFIG_FILE}
         fi
         ;;
       "create-config")
         if [ "$2" == "overwrite" ] || [ ! -e "${POWERBASH_CONFIG_FILE}" ]; then
           echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
           for K in "${!POWERBASH_CONFIG[@]}"; do
-            echo "$K=\"${POWERBASH_CONFIG[$K]}\"" >> ${POWERBASH_CONFIG_FILE}
+            echo "$K=${POWERBASH_CONFIG[$K]}" >> ${POWERBASH_CONFIG_FILE}
           done
           cat ${POWERBASH_CONFIG_FILE}
-        else
-          return 1
         fi
         ;;
     esac
   }
   __powerbash_config "load-defaults"
-  # unicode symbols
-  ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
-  ARROWS=( "⇠" "⇡" "⇢" "⇣" )
-  GIT_BRANCH_SYMBOL=${ICONS[1]}
-  GIT_BRANCH_CHANGED_SYMBOL=${ICONS[8]}
-  GIT_NEED_PUSH_SYMBOL=${ARROWS[1]}
-  GIT_NEED_PULL_SYMBOL=${ARROWS[3]}
-
-  # color specials
-  DIM="\[$(tput dim)\]"
-  REVERSE="\[$(tput rev)\]"
-  RESET="\[$(tput sgr0)\]"
-  BOLD="\[$(tput bold)\]"
+  __powerbash_config "load-config"
 
   __powerbash_colors() {
     if (( $(tput colors) < 256 )); then
@@ -158,17 +160,17 @@ __powerbash() {
     local marks
 
     # branch is modified?
-    [ -n "$(git status --porcelain)" ] && marks+=" $GIT_BRANCH_CHANGED_SYMBOL"
+    [ -n "$(git status --porcelain)" ] && marks+=" $POWERBASH_GIT_BRANCH_CHANGED_SYMBOL"
 
     # how many commits local branch is ahead/behind of remote?
     local stat="$(git status --porcelain --branch | head -n1)"
     local aheadN="$(echo $stat | grep -o 'ahead [0-9]*' | grep -o '[0-9]')"
     local behindN="$(echo $stat | grep -o 'behind [0-9]*' | grep -o '[0-9]')"
-    [ -n "$aheadN" ] && marks+=" $GIT_NEED_PUSH_SYMBOL$aheadN"
-    [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
+    [ -n "$aheadN" ] && marks+=" $POWERBASH_GIT_NEED_PUSH_SYMBOL$aheadN"
+    [ -n "$behindN" ] && marks+=" $POWERBASH_GIT_NEED_PULL_SYMBOL$behindN"
 
     # print the git branch segment without a trailing newline
-    printf "$(echo -n "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET" | tr '\n' ' ')"
+    printf "$(echo -n "$COLOR_GIT $POWERBASH_GIT_BRANCH_SYMBOL$branch$marks $RESET" | tr '\n' ' ')"
   }
 
   __powerbash_user_display() {
@@ -212,8 +214,8 @@ __powerbash() {
     printf "$SHORT_PATH"
  }
  __powerbash_short_num_change() {
-   [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
-   [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
+   [ -n $2 ] && local NUMBER="$2" # add/subtract by $2 when provided
+   [ -z "$NUMBER" ] && local NUMBER="1" # default add/subtract by 1
    [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
    [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
    return 0
@@ -286,7 +288,7 @@ __powerbash() {
       off)    PS1='\$ ' ;;
       system) PS1=$POWERBASH_SYSTEM_PS1 ;;
       on)
-        # Check for supported colors
+        # check for supported colors
         __powerbash_colors
 
         # set prompt
