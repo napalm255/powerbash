@@ -52,9 +52,9 @@ __powerbash_complete() {
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
         ;;
       config)
-        COMPREPLY=( $(compgen -W "load-defaults load-config save-config create-config" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "defaults load save create" -- ${cur}) )
         ;;
-      create-config)
+      create)
         COMPREPLY=( $(compgen -W "overwrite" -- ${cur}) )
         ;;
       short-path)
@@ -96,25 +96,25 @@ __powerbash() {
     if [ -z "${POWERBASH_SYSTEM_PS1}" ]; then POWERBASH_CONFIG[POWERBASH_SYSTEM_PS1]="$PS1"; fi
 
     case "$1" in
-      "load-defaults")
+      "defaults")
         for K in "${!POWERBASH_CONFIG[@]}"; do
           export $K="${POWERBASH_CONFIG[$K]}"
         done
         ;;
-      "load-config")
+      "load")
         if [ -e "${POWERBASH_CONFIG_FILE}" ]; then
           while read p; do
             [[ ! "$p" =~ ^# ]] && export $p
           done <${POWERBASH_CONFIG_FILE}
         fi
         ;;
-      "save-config")
+      "save")
         echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
         for K in "${!POWERBASH_CONFIG[@]}"; do
           echo "$K=$(eval echo \$${K})" >> ${POWERBASH_CONFIG_FILE}
         done
         ;;
-      "create-config")
+      "create")
         if [ "$2" == "overwrite" ] || [ ! -e "${POWERBASH_CONFIG_FILE}" ]; then
           echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
           for K in "${!POWERBASH_CONFIG[@]}"; do
@@ -125,8 +125,8 @@ __powerbash() {
         ;;
     esac
   }
-  __powerbash_config "load-defaults"
-  __powerbash_config "load-config"
+  __powerbash_config "defaults"
+  __powerbash_config "load"
 
   __powerbash_colors() {
     if (( $(tput colors) < 256 )); then
