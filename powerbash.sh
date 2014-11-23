@@ -64,35 +64,19 @@ __powerbash_complete() {
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   elif [ $COMP_CWORD -ge 2 ]; then
     case "${prev}" in
-      "user")
+      @(user|jobs|git|symbol|rc))
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
         return 0
         ;;
-      "path")
+      path)
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
         return 0
         ;;
-      "short-path")
+      short-path)
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
         return 0
         ;;
-      "jobs")
-        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-        return 0
-        ;;
-      "git")
-        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-        return 0
-        ;;
-      "symbol")
-        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-        return 0
-        ;;
-      "rc")
-        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-        return 0
-        ;;
-      "term")
+      term)
         COMPREPLY=( $(compgen -W "xterm xterm-256color screen screen-256color" -- ${cur}) )
         return 0
         ;;
