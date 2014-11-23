@@ -52,7 +52,7 @@ __powerbash_complete() {
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
         ;;
       config)
-        COMPREPLY=( $(compgen -W "load-defaults load-config create-config" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "load-defaults load-config save-config create-config" -- ${cur}) )
         ;;
       create-config)
         COMPREPLY=( $(compgen -W "overwrite" -- ${cur}) )
@@ -107,6 +107,11 @@ __powerbash() {
             [[ ! "$p" =~ ^# ]] && export $p
           done <${POWERBASH_CONFIG_FILE}
         fi
+        ;;
+      "save-config")
+        for K in "${!POWERBASH_CONFIG[@]}"; do
+          echo "$K=$(eval echo \$${K})" >> ${POWERBASH_CONFIG_FILE}
+        done
         ;;
       "create-config")
         if [ "$2" == "overwrite" ] || [ ! -e "${POWERBASH_CONFIG_FILE}" ]; then
