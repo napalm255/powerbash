@@ -12,14 +12,8 @@ complete -F __powerbash_complete powerbash
 
 powerbash() {
   case "$@" in
-    on)
-     export PROMPT_COMMAND=__powerbash_ps1-on
-     ;;
-    off)
-     export PROMPT_COMMAND=__powerbash_ps1-off
-     ;;
-    system)
-     export PROMPT_COMMAND=__powerbash_ps1-system
+    @(on|off|system))
+     export PROMPT_COMMAND="__powerbash_ps1 $1"
      ;;
     reload)
       source ~/.bashrc
@@ -257,36 +251,32 @@ __powerbash() {
    printf "$RC_DISPLAY"
  }
 
-  __powerbash_ps1-system() {
-    # set prompt
-    PS1=$POWERBASH_SYSTEM_PS1 
-  }
-
-  __powerbash_ps1-off() {
-    # set prompt
-    PS1='\$ '
-  }
-
-  __powerbash_ps1-on() {
+  __powerbash_ps1() {
     # keep this at top!!!
     # capture latest return code
     local RETURN_CODE=$?
     
-    # Check for supported colors
-    __powerbash_colors
+    case "$1" in
+      off)    PS1='\$ ' ;;
+      system) PS1=$POWERBASH_SYSTEM_PS1 ;;
+      on)
+        # Check for supported colors
+        __powerbash_colors
 
-    # set prompt
-    PS1=""
-    PS1+="$(__powerbash_user_display)"
-    PS1+="$(__powerbash_dir_display)"
-    PS1+="$(__powerbash_git_info)"
-    PS1+="$(__powerbash_jobs_display)"
-    PS1+="$(__powerbash_symbol_display)"
-    PS1+="$(__powerbash_rc_display ${RETURN_CODE})"
-    PS1+=" "
+        # set prompt
+        PS1=""
+        PS1+="$(__powerbash_user_display)"
+        PS1+="$(__powerbash_dir_display)"
+        PS1+="$(__powerbash_git_info)"
+        PS1+="$(__powerbash_jobs_display)"
+        PS1+="$(__powerbash_symbol_display)"
+        PS1+="$(__powerbash_rc_display ${RETURN_CODE})"
+        PS1+=" "
+        ;;
+    esac
   }
 
-  PROMPT_COMMAND=__powerbash_ps1-on
+  PROMPT_COMMAND="__powerbash_ps1 on"
 }
 
 __powerbash
