@@ -126,7 +126,7 @@ __powerbash() {
     [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
 
     # print the git branch segment without a trailing newline
-    printf "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET"
+    printf "$(echo -n "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET" | tr '\n' ' ')"
   }
 
   __powerbash_user_display() {
