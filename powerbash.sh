@@ -109,8 +109,8 @@ __powerbash() {
         fi
         ;;
       "save-config")
+        echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
         for K in "${!POWERBASH_CONFIG[@]}"; do
-          echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
           echo "$K=$(eval echo \$${K})" >> ${POWERBASH_CONFIG_FILE}
         done
         ;;
