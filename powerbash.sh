@@ -3,52 +3,31 @@
 # enable auto completion
 complete -F __powerbash_complete powerbash
 
+# save system PS1
+[ -z "$POWERBASH_SYSTEM_PS1" ] && POWERBASH_SYSTEM_PS1=$PS1
+
 powerbash() {
   case "$@" in
-    "on")
-      export PROMPT_COMMAND=__powerbash_ps1-on
-      ;;
-    "off")
-      export PROMPT_COMMAND=__powerbash_ps1-off
-      ;;
-    "system")
-      export PROMPT_COMMAND=__powerbash_ps1-system
-      ;;
-    "reload")
+    @(on|off|system))
+     export PROMPT_COMMAND="__powerbash_ps1 $1"
+     ;;
+    reload)
       source ~/.bashrc
       ;;
-    "user on")
-      export POWERBASH_USER="on"
+    @(user|host|path|git|jobs|symbol|rc)\ @(on|off))
+      export "POWERBASH_${1^^}"="$2"
       ;;
-    "user off")
-      export POWERBASH_USER="off"
+    path\ @(full|working-directory|short-directory|short-path))
+      export "POWERBASH_${1^^}"="$2"
       ;;
-    "path off")
-      export POWERBASH_PATH="off"
+    path\ short-path\ @(add|subtract))
+      __powerbash_short_num_change $3 $4
       ;;
-    "path full")
-      export POWERBASH_PATH="full"
-      ;;
-    "path working-directory")
-      export POWERBASH_PATH="working-directory"
-      ;;
-    "path short-directory")
-      export POWERBASH_PATH="short-directory"
-      ;;
-    "path short-path")
-      export POWERBASH_PATH="short-path"
-      ;;
-    "path short-path add"*)
-      __powerbash_short_num_change add $4
-      ;;
-    "path short-path subtract"*)
-      __powerbash_short_num_change subtract $4
-      ;;
-    "config"*)
+    config*)
       __powerbash_config $2 $3
       ;;
-    "term"*)
-      export TERM=$2
+    term*)
+      export "TERM"="$2"
       ;;
     *)
       echo "invalid option"
@@ -60,35 +39,29 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user term config"
+  opts="on off system reload path user host jobs git symbol rc term config"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   elif [ $COMP_CWORD -ge 2 ]; then
     case "${prev}" in
-      "user")
+      @(user|host|jobs|git|symbol|rc))
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-        return 0
         ;;
-      "path")
+      path)
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
-        return 0
         ;;
-      "config")
+      config)
         COMPREPLY=( $(compgen -W "load-defaults load-config create-config" -- ${cur}) )
-        return 0
         ;;
-      "create-config")
+      create-config)
         COMPREPLY=( $(compgen -W "overwrite" -- ${cur}) )
-        return 0
         ;;
-      "short-path")
+      short-path)
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
-        return 0
         ;;
-      "term")
+      term)
         COMPREPLY=( $(compgen -W "xterm xterm-256color screen screen-256color" -- ${cur}) )
-        return 0
         ;;
     esac
   fi
@@ -96,7 +69,6 @@ __powerbash_complete() {
 
 
 __powerbash() {
-
 
   __powerbash_config() {
     POWERBASH_CONFIG_FILE="/home/napalm/.powerbash_config"
@@ -134,12 +106,11 @@ __powerbash() {
     esac
   }
   __powerbash_config "load-defaults"
-
   # unicode symbols
-  ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" )
+  ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
   ARROWS=( "⇠" "⇡" "⇢" "⇣" )
   GIT_BRANCH_SYMBOL=${ICONS[1]}
-  GIT_BRANCH_CHANGED_SYMBOL='+'
+  GIT_BRANCH_CHANGED_SYMBOL=${ICONS[8]}
   GIT_NEED_PUSH_SYMBOL=${ARROWS[1]}
   GIT_NEED_PULL_SYMBOL=${ARROWS[3]}
 
@@ -148,44 +119,6 @@ __powerbash() {
   REVERSE="\[$(tput rev)\]"
   RESET="\[$(tput sgr0)\]"
   BOLD="\[$(tput bold)\]"
-
-
-  # solarized colorscheme
-  #FG_BASE03="\[$(tput setaf 8)\]"
-  #FG_BASE02="\[$(tput setaf 0)\]"
-  #FG_BASE01="\[$(tput setaf 10)\]"
-  #FG_BASE00="\[$(tput setaf 11)\]"
-  #FG_BASE0="\[$(tput setaf 12)\]"
-  #FG_BASE1="\[$(tput setaf 14)\]"
-  #FG_BASE2="\[$(tput setaf 7)\]"
-  #FG_BASE3="\[$(tput setaf 15)\]"
-
-  #BG_BASE03="\[$(tput setab 8)\]"
-  #BG_BASE02="\[$(tput setab 0)\]"
-  #BG_BASE01="\[$(tput setab 10)\]"
-  #BG_BASE00="\[$(tput setab 11)\]"
-  #BG_BASE0="\[$(tput setab 12)\]"
-  #BG_BASE1="\[$(tput setab 14)\]"
-  #BG_BASE2="\[$(tput setab 7)\]"
-  #BG_BASE3="\[$(tput setab 15)\]"
-
-  #FG_YELLOW="\[$(tput setaf 3)\]"
-  #FG_ORANGE="\[$(tput setaf 9)\]"
-  #FG_RED="\[$(tput setaf 1)\]"
-  #FG_MAGENTA="\[$(tput setaf 5)\]"
-  #FG_VIOLET="\[$(tput setaf 13)\]"
-  #FG_BLUE="\[$(tput setaf 4)\]"
-  #FG_CYAN="\[$(tput setaf 6)\]"
-  #FG_GREEN="\[$(tput setaf 2)\]"
-
-  #BG_YELLOW="\[$(tput setab 3)\]"
-  #BG_ORANGE="\[$(tput setab 9)\]"
-  #BG_RED="\[$(tput setab 1)\]"
-  #BG_MAGENTA="\[$(tput setab 5)\]"
-  #BG_VIOLET="\[$(tput setab 13)\]"
-  #BG_BLUE="\[$(tput setab 4)\]"
-  #BG_CYAN="\[$(tput setab 6)\]"
-  #BG_GREEN="\[$(tput setab 2)\]"
 
   __powerbash_colors() {
     if (( $(tput colors) < 256 )); then
@@ -215,6 +148,7 @@ __powerbash() {
 
 
   __powerbash_git_info() { 
+    [ "$POWERBASH_GIT" == "off" ] && return # disable display
     [ -x "$(which git)" ] || return    # git not found
 
     # get current branch name or short SHA1 hash for detached head
@@ -238,20 +172,23 @@ __powerbash() {
   }
 
   __powerbash_user_display() {
+    [ "$POWERBASH_USER" == "off" ] && return # disable display
+
     # check if running sudo
-    if [ -z "$SUDO_USER" ]; then
-      local IS_SUDO=""
-    else
-      local IS_SUDO="$COLOR_SUDO"
-    fi
+    [ -n "$SUDO_USER" ] && IS_SUDO="$COLOR_SUDO"
+
+    [ "$POWERBASH_USER" == "on" ] &&
+      printf "$COLOR_USER$IS_SUDO $USER $RESET"
+  }
+
+  __powerbash_host_display() {
+    [ "$POWERBASH_HOST" == "off" ] && return # disable display
 
     # check if ssh session
-    if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-      local IS_SSH="$COLOR_SSH@$HOSTNAME"
-    else
-      local IS_SSH=""
-    fi
-    if [ "$POWERBASH_USER" != "off" ]; then printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"; fi
+    if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then local IS_SSH=1; fi
+
+    [[ "$POWERBASH_HOST" == "on" || "$IS_SSH" -eq 1 ]] &&
+      printf "$COLOR_SSH@$(hostname -s) $RESET"
   }
 
   __powerbash_short_dir() {
@@ -275,24 +212,17 @@ __powerbash() {
     printf "$SHORT_PATH"
  }
  __powerbash_short_num_change() {
-   local NUMBER_DEFAULT=1
-   if [ -z "$2" ];then
-     NUMBER=$NUMBER_DEFAULT
-   else
-     NUMBER=$2
-   fi
-   if [ "$1" == "add" ]; then
-     ((POWERBASH_SHORT_NUM+=$NUMBER))
-   fi
-   if [ "$1" == "subtract" ]; then
-     ((POWERBASH_SHORT_NUM-=$NUMBER))
-   fi
+   [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
+   [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
+   [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
+   [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
+   return 0
  }
 
  __powerbash_dir_display() {
-   if [ "$POWERBASH_PATH" == "off" ]; then
-     local DIR_DISPLAY=""
-   elif [ "$PWD" == "/" ]; then
+   [ "$POWERBASH_PATH" == "off" ] && return # disable display
+
+   if [ "$PWD" == "/" ]; then
      local DIR_DISPLAY="/"
    elif [ "$HOME" == "$PWD" ]; then
      local DIR_DISPLAY="~"
@@ -307,10 +237,12 @@ __powerbash() {
    else
      local DIR_DISPLAY="${PWD##*/}"
    fi
-   if [ "$DIR_DISPLAY" != "" ]; then printf "$COLOR_DIR $DIR_DISPLAY $RESET"; fi
+   printf "$COLOR_DIR $DIR_DISPLAY $RESET"
  }
 
  __powerbash_jobs_display() {
+   [ "$POWERBASH_JOBS" == "off" ] && return # disable display
+
    local JOBS="$(jobs | wc -l)"
    if [ "$JOBS" -ne "0" ]; then
      local JOBS_DISPLAY="$COLOR_JOBS $JOBS $RESET"
@@ -321,6 +253,8 @@ __powerbash() {
  }
 
  __powerbash_symbol_display() {
+   [ "$POWERBASH_SYMBOL" == "off" ] && return # disable display
+
    # check if root or regular user
    if [ $EUID -ne 0 ]; then
      local SYMBOL_BG=$COLOR_SYMBOL_USER
@@ -331,6 +265,8 @@ __powerbash() {
  }
 
  __powerbash_rc_display() {
+   [ "$POWERBASH_RC" == "off" ] && return # disable display
+
    # check the exit code of the previous command and display different
    local rc=$1
    if [ $rc -ne 0 ]; then
@@ -341,38 +277,34 @@ __powerbash() {
    printf "$RC_DISPLAY"
  }
 
-  __powerbash_ps1-system() {
-    # set prompt
-    PS1=$POWERBASH_SYSTEM_PS1 
-  }
-
-  __powerbash_ps1-off() {
-    # set prompt
-    PS1='\$ '
-  }
-
-  __powerbash_ps1-on() {
+  __powerbash_ps1() {
     # keep this at top!!!
     # capture latest return code
     local RETURN_CODE=$?
     
-    # Check for supported colors
-    __powerbash_colors
+    case "$1" in
+      off)    PS1='\$ ' ;;
+      system) PS1=$POWERBASH_SYSTEM_PS1 ;;
+      on)
+        # Check for supported colors
+        __powerbash_colors
 
-    # set prompt
-    PS1=""
-    PS1+="$(__powerbash_user_display)"
-    PS1+="$(__powerbash_dir_display)"
-    PS1+="$(__powerbash_git_info)"
-    PS1+="$(__powerbash_jobs_display)"
-    PS1+="$(__powerbash_symbol_display)"
-    PS1+="$(__powerbash_rc_display ${RETURN_CODE})"
-    PS1+=" "
+        # set prompt
+        PS1=""
+        PS1+="$(__powerbash_user_display)"
+        PS1+="$(__powerbash_host_display)"
+        PS1+="$(__powerbash_dir_display)"
+        PS1+="$(__powerbash_git_info)"
+        PS1+="$(__powerbash_jobs_display)"
+        PS1+="$(__powerbash_symbol_display)"
+        PS1+="$(__powerbash_rc_display ${RETURN_CODE})"
+        PS1+=" "
+        ;;
+    esac
   }
 
   # set prompt command
-  PROMPT_COMMAND=__powerbash_ps1-on
-
+  PROMPT_COMMAND="__powerbash_ps1 on"
 }
 
 __powerbash
