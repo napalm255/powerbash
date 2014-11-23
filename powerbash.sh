@@ -18,7 +18,7 @@ powerbash() {
     reload)
       source ~/.bashrc
       ;;
-    @(user|path|git|jobs|symbol|rc)\ @(on|off))
+    @(user|host|path|git|jobs|symbol|rc)\ @(on|off))
       export "POWERBASH_${1^^}"="$2"
       ;;
     path\ @(full|working-directory|short-directory|short-path))
@@ -40,13 +40,13 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user jobs git symbol rc term"
+  opts="on off system reload path user host jobs git symbol rc term"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   elif [ $COMP_CWORD -ge 2 ]; then
     case "${prev}" in
-      @(user|jobs|git|symbol|rc))
+      @(user|host|jobs|git|symbol|rc))
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
         ;;
       path)
@@ -133,20 +133,20 @@ __powerbash() {
     [ "$POWERBASH_USER" == "off" ] && return # disable display
 
     # check if running sudo
-    if [ -z "$SUDO_USER" ]; then
-      local IS_SUDO=""
-    else
-      local IS_SUDO="$COLOR_SUDO"
-    fi
+    [ -n "$SUDO_USER" ] && IS_SUDO="$COLOR_SUDO"
+
+    [ "$POWERBASH_USER" == "on" ] &&
+      printf "$COLOR_USER$IS_SUDO $USER $RESET"
+  }
+
+  __powerbash_host_display() {
+    [ "$POWERBASH_HOST" == "off" ] && return # disable display
 
     # check if ssh session
-    if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-      local IS_SSH="$COLOR_SSH@$(hostname -s)"
-    else
-      local IS_SSH=""
-    fi
+    if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then local IS_SSH=1; fi
 
-    [ "$POWERBASH_USER" == "on" ] && printf "$COLOR_USER$IS_SUDO $USER$IS_SSH $RESET"
+    [[ "$POWERBASH_HOST" == "on" || "$IS_SSH" -eq 1 ]] &&
+      printf "$COLOR_SSH@$(hostname -s) $RESET"
   }
 
   __powerbash_short_dir() {
@@ -250,6 +250,7 @@ __powerbash() {
         # set prompt
         PS1=""
         PS1+="$(__powerbash_user_display)"
+        PS1+="$(__powerbash_host_display)"
         PS1+="$(__powerbash_dir_display)"
         PS1+="$(__powerbash_git_info)"
         PS1+="$(__powerbash_jobs_display)"
