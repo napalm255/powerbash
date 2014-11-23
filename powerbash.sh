@@ -18,29 +18,17 @@ powerbash() {
     reload)
       source ~/.bashrc
       ;;
-    user\ @(on|off))
-      export POWERBASH_USER="$2"
+    @(user|path|git|jobs|symbol|rc)\ @(on|off))
+      export "POWERBASH_${1^^}"="$2"
       ;;
-    path\ @(off|full|working-directory|short-directory|short-path))
-      export POWERBASH_PATH="$2"
+    path\ @(full|working-directory|short-directory|short-path))
+      export "POWERBASH_${1^^}"="$2"
       ;;
     path\ short-path\ @(add|subtract))
       __powerbash_short_num_change $3 $4
       ;;
-    git\ @(on|off))
-      export POWERBASH_GIT="$2"
-      ;;
-    jobs\ @(on|off))
-      export POWERBASH_JOBS="$2"
-      ;;
-    symbol\ @(on|off))
-      export POWERBASH_SYMBOL="$2"
-      ;;
-    rc\ @(on|off))
-      export POWERBASH_RC="$2"
-      ;;
     term*)
-      export TERM=$2
+      export "TERM"="$2"
       ;;
     *)
       echo "invalid option"
