@@ -134,9 +134,8 @@ __powerbash() {
 
     # check if running sudo
     [ -n "$SUDO_USER" ] && IS_SUDO="$COLOR_SUDO"
-
-    [ "$POWERBASH_USER" == "on" ] &&
-      printf "$COLOR_USER$IS_SUDO $USER $RESET"
+    [ "$POWERBASH_USER" == "on" ] && printf "$COLOR_USER$IS_SUDO $USER $RESET"
+    #[ "$POWERBASH_USER" == "on" ] && printf "$COLOR_USER$IS_SUDO \\u $RESET" ##throws an error?!
   }
 
   __powerbash_host_display() {
@@ -144,9 +143,7 @@ __powerbash() {
 
     # check if ssh session
     if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then local IS_SSH=1; fi
-
-    [[ "$POWERBASH_HOST" == "on" || "$IS_SSH" -eq 1 ]] &&
-      printf "$COLOR_SSH@$(hostname -s) $RESET"
+    [[ "$POWERBASH_HOST" == "on" || "$IS_SSH" -eq 1 ]] && printf "$COLOR_SSH@\\h $RESET"
   }
 
   __powerbash_short_dir() {
@@ -216,13 +213,7 @@ __powerbash() {
 
  __powerbash_jobs_display() {
    [ "$POWERBASH_JOBS" == "off" ] && return # disable display
-
-   # check number of background jobs
-   local JOBS="$(jobs | wc -l)"
-   local jobs_display=""
-   [ "$JOBS" -ne "0" ] && jobs_display="$COLOR_JOBS $JOBS $RESET"
-
-   printf "$jobs_display"
+   [ $(jobs | wc -l) -ne "0" ] && printf "$COLOR_JOBS \\j $RESET"
  }
 
  __powerbash_symbol_display() {
