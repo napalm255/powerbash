@@ -228,13 +228,7 @@ __powerbash() {
 
  __powerbash_rc_display() {
    [ "$POWERBASH_RC" == "off" ] && return # disable display
-
-   # check the exit code of the previous command and display different
-   local rc=$1
-   local rc_display=""
-   [ $rc -ne 0 ] && rc_display="$COLOR_RC $rc $RESET"
-
-   printf "$rc_display"
+   [ $1 -ne 0 ] && printf "$COLOR_RC $1 $RESET"
  }
 
   __powerbash_ps1() {
