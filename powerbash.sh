@@ -194,19 +194,18 @@ __powerbash() {
 
  __powerbash_dir_display() {
    [ "$POWERBASH_PATH" == "off" ] && return # disable display
-
+   
+   local dir_display=""
    case "$POWERBASH_PATH" in
-     full)               dir_display="$PWD" ;;
-     working-directory)  dir_display="${PWD##*/}" ;;
+     full)               dir_display="\\w" ;;
+     working-directory)  dir_display="\\W" ;;
      short-path)         dir_display="$(__powerbash_short_path)" ;;
      short-directory)    dir_display="$(__powerbash_short_dir)" ;;
      mini-dir)           dir_display="$(__powerbash_mini_dir)" ;;
-     *)                  dir_display="${PWD##*/}" ;;
+     *)                  dir_display="\\W" ;;
    esac
 
-   local dir_display=""
-   [ "$PWD" == "/" ] && dir_display="/"
-   [ "$PWD" == "$HOME" ] && dir_display="~"
+   [ "$dir_display" == "$HOME" ] && dir_display="~" # display ~ for home
 
    printf "$COLOR_DIR $dir_display $RESET"
  }
