@@ -169,6 +169,23 @@ __powerbash() {
     fi
     printf "$SHORT_PATH"
  }
+
+  __powerbash_mini_dir() {
+    local current_path="${PWD/$HOME/\~}"
+
+    IFS='/' read -a dir_array <<< "$current_path"
+
+    local path=""
+    local dir_len=$((${#dir_array[@]}-1))
+
+    for dir in ${dir_array[@]:0:$dir_len}; do
+      [[ $dir == '~' ]] && path="${dir:0:1}" || path="$path/${dir:0:1}"
+    done
+    path="$path/${dir_array[$dir_len]}"
+
+    printf "$path"
+  }
+
  __powerbash_short_num_change() {
    [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
    [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
@@ -192,6 +209,8 @@ __powerbash() {
      local DIR_DISPLAY=$(__powerbash_short_dir)
    elif [ "$POWERBASH_PATH" == "short-path" ]; then
      local DIR_DISPLAY=$(__powerbash_short_path)
+   elif [ "$POWERBASH_PATH" == "mini-dir" ]; then
+     local DIR_DISPLAY=$(__powerbash_mini_dir)
    else
      local DIR_DISPLAY="${PWD##*/}"
    fi
