@@ -113,7 +113,7 @@ __powerbash() {
         ;;
     esac
   }
-  __powerbash_config "defaults"
+  __powerbash_config "default"
   __powerbash_config "load"
 
   __powerbash_colors() {
