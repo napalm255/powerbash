@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#
 
 # enable auto completion
 complete -F __powerbash_complete powerbash
@@ -9,7 +8,6 @@ complete -F __powerbash_complete powerbash
 
 # set default variables
 [ -z "$POWERBASH_SHORT_NUM" ] && POWERBASH_SHORT_NUM=20
-
 
 powerbash() {
   case "$@" in
@@ -65,7 +63,6 @@ __powerbash_complete() {
     esac
   fi
 }
-
 
 __powerbash() {
 
