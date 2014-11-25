@@ -85,7 +85,7 @@ __powerbash() {
       [POWERBASH_GIT_NEED_PUSH_SYMBOL]=${POWERBASH_ARROWS[1]}
       [POWERBASH_GIT_NEED_PULL_SYMBOL]=${POWERBASH_ARROWS[3]}
       [POWERBASH_USER]="on"
-      [POWERBASH_HOST]="off"
+      [POWERBASH_HOST]="auto"
       [POWERBASH_PATH]="short-directoy"
       [POWERBASH_GIT]="on"
       [POWERBASH_JOBS]="on"
