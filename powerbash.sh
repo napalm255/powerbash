@@ -6,10 +6,6 @@ complete -F __powerbash_complete powerbash
 # save system PS1
 [ -z "$POWERBASH_SYSTEM_PS1" ] && POWERBASH_SYSTEM_PS1=$PS1
 
-# set default variables
-[ -z "$POWERBASH_SHORT_NUM" ] && POWERBASH_SHORT_NUM=20
-
-
 powerbash() {
   case "$@" in
     @(on|off|system))
@@ -27,6 +23,9 @@ powerbash() {
     path\ short-path\ @(add|subtract))
       __powerbash_short_num_change $3 $4
       ;;
+    config*)
+      __powerbash_config $2
+      ;;
     term*)
       export "TERM"="$2"
       ;;
@@ -40,7 +39,7 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user host jobs git symbol rc term"
+  opts="on off system reload path user host jobs git symbol rc term config"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -55,6 +54,9 @@ __powerbash_complete() {
       path)
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path mini-dir" -- ${cur}) )
         ;;
+      config)
+        COMPREPLY=( $(compgen -W "default load save" -- ${cur}) )
+        ;;
       short-path)
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
         ;;
@@ -68,19 +70,54 @@ __powerbash_complete() {
 
 __powerbash() {
 
-  # unicode symbols
-  ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
-  ARROWS=( "⇠" "⇡" "⇢" "⇣" )
-  GIT_BRANCH_SYMBOL=${ICONS[1]}
-  GIT_BRANCH_CHANGED_SYMBOL=${ICONS[8]}
-  GIT_NEED_PUSH_SYMBOL=${ARROWS[1]}
-  GIT_NEED_PULL_SYMBOL=${ARROWS[3]}
+  __powerbash_config() {
+    POWERBASH_CONFIG_FILE="$HOME/.powerbash_config"
+    POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
+    POWERBASH_ARROWS=( "⇠" "⇡" "⇢" "⇣" )
+    DIM="\[$(tput dim)\]"
+    REVERSE="\[$(tput rev)\]"
+    RESET="\[$(tput sgr0)\]"
+    BOLD="\[$(tput bold)\]"
 
-  # color specials
-  DIM="\[$(tput dim)\]"
-  REVERSE="\[$(tput rev)\]"
-  RESET="\[$(tput sgr0)\]"
-  BOLD="\[$(tput bold)\]"
+    declare -A POWERBASH_CONFIG=(
+      [POWERBASH_GIT_BRANCH_SYMBOL]=${POWERBASH_ICONS[1]}
+      [POWERBASH_GIT_BRANCH_CHANGED_SYMBOL]=${POWERBASH_ICONS[8]}
+      [POWERBASH_GIT_NEED_PUSH_SYMBOL]=${POWERBASH_ARROWS[1]}
+      [POWERBASH_GIT_NEED_PULL_SYMBOL]=${POWERBASH_ARROWS[3]}
+      [POWERBASH_USER]="on"
+      [POWERBASH_HOST]="auto"
+      [POWERBASH_PATH]="working-directoy"
+      [POWERBASH_GIT]="on"
+      [POWERBASH_JOBS]="on"
+      [POWERBASH_SYMBOL]="on"
+      [POWERBASH_RC]="on"
+      [POWERBASH_SHORT_NUM]=20
+    )
+    if [ -z "${POWERBASH_SYSTEM_PS1}" ]; then POWERBASH_CONFIG[POWERBASH_SYSTEM_PS1]="$PS1"; fi
+
+    case "$1" in
+      default)
+        for K in "${!POWERBASH_CONFIG[@]}"; do
+          export $K="${POWERBASH_CONFIG[$K]}"
+        done
+        ;;
+      load)
+        if [ -e "${POWERBASH_CONFIG_FILE}" ]; then
+          while read p; do
+            [[ ! "$p" =~ ^# ]] && export $p
+          done <${POWERBASH_CONFIG_FILE}
+        fi
+        ;;
+      save)
+        echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
+        for K in "${!POWERBASH_CONFIG[@]}"; do
+          echo "$K=$(eval echo \$${K})" >> ${POWERBASH_CONFIG_FILE}
+        done
+        ;;
+    esac
+  }
+  __powerbash_config "default"
+  __powerbash_config "load"
 
   __powerbash_colors() {
     if (( $(tput colors) < 256 )); then
@@ -108,6 +145,7 @@ __powerbash() {
     fi
   }
 
+
   __powerbash_git_info() { 
     [ "$POWERBASH_GIT" == "off" ] && return # disable display
     [ -x "$(which git)" ] || return    # git not found
@@ -119,17 +157,17 @@ __powerbash() {
     local marks
 
     # branch is modified?
-    [ -n "$(git status --porcelain)" ] && marks+=" $GIT_BRANCH_CHANGED_SYMBOL"
+    [ -n "$(git status --porcelain)" ] && marks+=" $POWERBASH_GIT_BRANCH_CHANGED_SYMBOL"
 
     # how many commits local branch is ahead/behind of remote?
     local stat="$(git status --porcelain --branch | head -n1)"
     local aheadN="$(echo $stat | grep -o 'ahead [0-9]*' | grep -o '[0-9]')"
     local behindN="$(echo $stat | grep -o 'behind [0-9]*' | grep -o '[0-9]')"
-    [ -n "$aheadN" ] && marks+=" $GIT_NEED_PUSH_SYMBOL$aheadN"
-    [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
+    [ -n "$aheadN" ] && marks+=" $POWERBASH_GIT_NEED_PUSH_SYMBOL$aheadN"
+    [ -n "$behindN" ] && marks+=" $POWERBASH_GIT_NEED_PULL_SYMBOL$behindN"
 
     # print the git branch segment without a trailing newline
-    printf "$(echo -n "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET" | tr '\n' ' ')"
+    printf "$(echo -n "$COLOR_GIT $POWERBASH_GIT_BRANCH_SYMBOL$branch$marks $RESET" | tr '\n' ' ')"
   }
 
   __powerbash_user_display() {
@@ -240,7 +278,7 @@ __powerbash() {
       off)    PS1='\$ ' ;;
       system) PS1=$POWERBASH_SYSTEM_PS1 ;;
       on)
-        # Check for supported colors
+        # check for supported colors
         __powerbash_colors
 
         # set prompt
@@ -257,6 +295,7 @@ __powerbash() {
     esac
   }
 
+  # set prompt command
   PROMPT_COMMAND="__powerbash_ps1 on"
 }
 
