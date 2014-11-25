@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#
 
 # enable auto completion
 complete -F __powerbash_complete powerbash
