@@ -52,7 +52,7 @@ __powerbash_complete() {
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path mini-dir" -- ${cur}) )
         ;;
       config)
-        COMPREPLY=( $(compgen -W "defaults load save" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "default load save" -- ${cur}) )
         ;;
       short-path)
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
@@ -93,19 +93,19 @@ __powerbash() {
     if [ -z "${POWERBASH_SYSTEM_PS1}" ]; then POWERBASH_CONFIG[POWERBASH_SYSTEM_PS1]="$PS1"; fi
 
     case "$1" in
-      "defaults")
+      default)
         for K in "${!POWERBASH_CONFIG[@]}"; do
           export $K="${POWERBASH_CONFIG[$K]}"
         done
         ;;
-      "load")
+      load)
         if [ -e "${POWERBASH_CONFIG_FILE}" ]; then
           while read p; do
             [[ ! "$p" =~ ^# ]] && export $p
           done <${POWERBASH_CONFIG_FILE}
         fi
         ;;
-      "save")
+      save)
         echo "# powerbash configuration" > ${POWERBASH_CONFIG_FILE}
         for K in "${!POWERBASH_CONFIG[@]}"; do
           echo "$K=$(eval echo \$${K})" >> ${POWERBASH_CONFIG_FILE}
