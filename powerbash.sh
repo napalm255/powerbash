@@ -120,13 +120,12 @@ __powerbash() {
 
     # how many commits local branch is ahead/behind of remote?
     local stat="$(git status --porcelain --branch | head -n1)"
-    local aheadN="$(echo $stat | grep -o 'ahead [0-9]*' | grep -o '[0-9]')"
-    local behindN="$(echo $stat | grep -o 'behind [0-9]*' | grep -o '[0-9]')"
+    local aheadN="$(echo $stat | grep -o 'ahead [0-9]*' | grep -o '[0-9]*')"
+    local behindN="$(echo $stat | grep -o 'behind [0-9]*' | grep -o '[0-9]*')"
     [ -n "$aheadN" ] && marks+=" $GIT_NEED_PUSH_SYMBOL$aheadN"
     [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
 
-    # print the git branch segment without a trailing newline
-    printf "$(echo -n "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET" | tr '\n' ' ')"
+    printf "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET"
   }
 
   __powerbash_user_display() {
