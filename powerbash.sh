@@ -133,17 +133,15 @@ __powerbash() {
     [ "$POWERBASH_USER" == "off" ] && return # disable display
 
     # check if running sudo
-    [ -n "$SUDO_USER" ] && IS_SUDO="$COLOR_SUDO"
-    [ "$POWERBASH_USER" == "on" ] && printf "$COLOR_USER$IS_SUDO $USER $RESET"
-    #[ "$POWERBASH_USER" == "on" ] && printf "$COLOR_USER$IS_SUDO \\u $RESET" ##throws an error?!
+    [ -n "$SUDO_USER" ] && local IS_SUDO="$COLOR_SUDO"
+    [[ -z "$POWERBASH_USER" || "$POWERBASH_USER" == "on" ]] && printf "$COLOR_USER$IS_SUDO \\\u $RESET"
   }
 
   __powerbash_host_display() {
     [ "$POWERBASH_HOST" == "off" ] && return # disable display
 
-    # check if ssh session
-    if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then local IS_SSH=1; fi
-    [[ "$POWERBASH_HOST" == "on" || "$IS_SSH" -eq 1 ]] && printf "$COLOR_SSH@\\h $RESET"
+    # check if on or ssh session
+    [[ "$POWERBASH_HOST" == "on" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && printf "$COLOR_SSH@\\h $RESET"
   }
 
   __powerbash_short_dir() {
@@ -166,7 +164,7 @@ __powerbash() {
     [[ ${#PWD} > $short_num ]] && short_path="..${PWD: -$short_num}"
 
     printf "$short_path"
- }
+  }
 
   __powerbash_mini_dir() {
     local current_path="${PWD/$HOME/\~}"
@@ -184,51 +182,51 @@ __powerbash() {
     printf "$path"
   }
 
- __powerbash_short_num_change() {
-   [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
-   [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
-   [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
-   [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
-   return 0
- }
+  __powerbash_short_num_change() {
+    [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
+    [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
+    [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
+    [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
+    return 0
+  }
 
- __powerbash_dir_display() {
-   [ "$POWERBASH_PATH" == "off" ] && return # disable display
-   
-   local dir_display=""
-   case "$POWERBASH_PATH" in
-     full)               dir_display="\\w" ;;
-     working-directory)  dir_display="\\W" ;;
-     short-path)         dir_display="$(__powerbash_short_path)" ;;
-     short-directory)    dir_display="$(__powerbash_short_dir)" ;;
-     mini-dir)           dir_display="$(__powerbash_mini_dir)" ;;
-     *)                  dir_display="\\W" ;;
-   esac
+  __powerbash_dir_display() {
+    [ "$POWERBASH_PATH" == "off" ] && return # disable display
 
-   [ "$dir_display" == "$HOME" ] && dir_display="~" # display ~ for home
+    local dir_display=""
+    case "$POWERBASH_PATH" in
+      full)               dir_display="\\w" ;;
+      working-directory)  dir_display="\\W" ;;
+      short-path)         dir_display="$(__powerbash_short_path)" ;;
+      short-directory)    dir_display="$(__powerbash_short_dir)" ;;
+      mini-dir)           dir_display="$(__powerbash_mini_dir)" ;;
+      *)                  dir_display="\\W" ;;
+    esac
 
-   printf "$COLOR_DIR $dir_display $RESET"
- }
+    [ "$dir_display" == "$HOME" ] && dir_display="~" # display ~ for home
 
- __powerbash_jobs_display() {
-   [ "$POWERBASH_JOBS" == "off" ] && return # disable display
-   [ $(jobs | wc -l) -ne "0" ] && printf "$COLOR_JOBS \\j $RESET"
- }
+    printf "$COLOR_DIR $dir_display $RESET"
+  }
 
- __powerbash_symbol_display() {
-   [ "$POWERBASH_SYMBOL" == "off" ] && return # disable display
+  __powerbash_jobs_display() {
+    [ "$POWERBASH_JOBS" == "off" ] && return # disable display
+    [ $(jobs | wc -l) -ne "0" ] && printf "$COLOR_JOBS \\j $RESET"
+  }
 
-   # different color for root and regular user
-   local symbol_bg=$COLOR_SYMBOL_USER
-   [ $EUID -eq 0 ] && symbol_bg=$COLOR_SYMBOL_ROOT
+  __powerbash_symbol_display() {
+    [ "$POWERBASH_SYMBOL" == "off" ] && return # disable display
 
-   printf "$symbol_bg \\$ $RESET"
- }
+    # different color for root and regular user
+    local symbol_bg=$COLOR_SYMBOL_USER
+    [ $EUID -eq 0 ] && symbol_bg=$COLOR_SYMBOL_ROOT
 
- __powerbash_rc_display() {
-   [ "$POWERBASH_RC" == "off" ] && return # disable display
-   [ $1 -ne 0 ] && printf "$COLOR_RC $1 $RESET"
- }
+    printf "$symbol_bg \\$ $RESET"
+  }
+
+  __powerbash_rc_display() {
+    [ "$POWERBASH_RC" == "off" ] && return # disable display
+    [ $1 -ne 0 ] && printf "$COLOR_RC $1 $RESET"
+  }
 
   __powerbash_ps1() {
     # keep this at top!!!
