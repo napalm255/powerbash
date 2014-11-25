@@ -18,7 +18,7 @@ powerbash() {
     reload)
       source ~/.bashrc
       ;;
-    @(user|host|path|git|jobs|symbol|rc)\ @(on|off))
+    @(user|host|path|git|jobs|symbol|rc)\ @(on|off|auto))
       export "POWERBASH_${1^^}"="$2"
       ;;
     path\ @(full|working-directory|short-directory|short-path|mini-dir))
@@ -46,8 +46,11 @@ __powerbash_complete() {
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   elif [ $COMP_CWORD -ge 2 ]; then
     case "${prev}" in
-      @(user|host|jobs|git|symbol|rc))
+      @(user|jobs|git|symbol|rc))
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
+        ;;
+      host)
+        COMPREPLY=( $(compgen -W "on off auto" -- ${cur}) )
         ;;
       path)
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path mini-dir" -- ${cur}) )
@@ -141,7 +144,7 @@ __powerbash() {
     [ "$POWERBASH_HOST" == "off" ] && return # disable display
 
     # check if on or ssh session
-    [[ "$POWERBASH_HOST" == "on" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && printf "$COLOR_SSH@\\h $RESET"
+    [[ "$POWERBASH_HOST" == "on" || "$POWERBASH_HOST" == "auto" && -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && printf "$COLOR_SSH@\\h $RESET"
   }
 
   __powerbash_short_dir() {
