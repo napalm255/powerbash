@@ -24,7 +24,7 @@ powerbash() {
       __powerbash_short_num_change $3 $4
       ;;
     config*)
-      __powerbash_config $2 $3
+      __powerbash_config $2
       ;;
     term*)
       export "TERM"="$2"
