@@ -19,10 +19,10 @@ powerbash() {
     reload)
       source ~/.bashrc
       ;;
-    @(user|host|path|git|jobs|symbol|rc)\ @(on|off))
+    @(user|host|path|git|jobs|symbol|rc)\ @(on|off|auto))
       export "POWERBASH_${1^^}"="$2"
       ;;
-    path\ @(full|working-directory|short-directory|short-path))
+    path\ @(full|working-directory|short-directory|short-path|mini-dir))
       export "POWERBASH_${1^^}"="$2"
       ;;
     path\ short-path\ @(add|subtract))
@@ -47,11 +47,14 @@ __powerbash_complete() {
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   elif [ $COMP_CWORD -ge 2 ]; then
     case "${prev}" in
-      @(user|host|jobs|git|symbol|rc))
+      @(user|jobs|git|symbol|rc))
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
         ;;
+      host)
+        COMPREPLY=( $(compgen -W "on off auto" -- ${cur}) )
+        ;;
       path)
-        COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path" -- ${cur}) )
+        COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path mini-dir" -- ${cur}) )
         ;;
       short-path)
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
@@ -133,107 +136,100 @@ __powerbash() {
     [ "$POWERBASH_USER" == "off" ] && return # disable display
 
     # check if running sudo
-    [ -n "$SUDO_USER" ] && IS_SUDO="$COLOR_SUDO"
-
-    [ "$POWERBASH_USER" == "on" ] &&
-      printf "$COLOR_USER$IS_SUDO $USER $RESET"
+    [ -n "$SUDO_USER" ] && local IS_SUDO="$COLOR_SUDO"
+    [[ -z "$POWERBASH_USER" || "$POWERBASH_USER" == "on" ]] && printf "$COLOR_USER$IS_SUDO \\\u $RESET"
   }
 
   __powerbash_host_display() {
     [ "$POWERBASH_HOST" == "off" ] && return # disable display
 
-    # check if ssh session
-    if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then local IS_SSH=1; fi
-
-    [[ "$POWERBASH_HOST" == "on" || "$IS_SSH" -eq 1 ]] &&
-      printf "$COLOR_SSH@$(hostname -s) $RESET"
+    # check if on or ssh session
+    [[ "$POWERBASH_HOST" == "on" || "$POWERBASH_HOST" == "auto" && -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && printf "$COLOR_SSH@\\h $RESET"
   }
 
   __powerbash_short_dir() {
-    local DIR_SPLIT_COUNT=4
-    IFS='/' read -a DIR_ARRAY <<< "$PWD"
-    if [ ${#DIR_ARRAY[@]} -gt $DIR_SPLIT_COUNT ]; then
-      local SHORT_DIR="/${DIR_ARRAY[1]}/.../${DIR_ARRAY[${#DIR_ARRAY[@]}-2]}/${DIR_ARRAY[${#DIR_ARRAY[@]}-1]}"
-    else
-      local SHORT_DIR="$PWD"
+    local dir_split_count=4
+    local short_dir="$PWD"
+    local dir_array=""
+
+    IFS='/' read -a dir_array <<< "$PWD"
+    if [ ${#dir_array[@]} -gt $dir_split_count ]; then
+      short_dir="/${dir_array[1]}/.../${dir_array[${#dir_array[@]}-2]}/${dir_array[${#dir_array[@]}-1]}"
     fi
-    printf "$SHORT_DIR"
+
+    printf "$short_dir"
   }
 
   __powerbash_short_path() {
-    local SHORT_NUM="$POWERBASH_SHORT_NUM"
-    if (( ${#PWD} > $SHORT_NUM )); then
-      local SHORT_PATH="..${PWD: -$SHORT_NUM}"
-    else
-      local SHORT_PATH=$PWD
-    fi
-    printf "$SHORT_PATH"
- }
- __powerbash_short_num_change() {
-   [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
-   [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
-   [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
-   [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
-   return 0
- }
+    local short_num="$POWERBASH_SHORT_NUM"
+    local short_path=$PWD
 
- __powerbash_dir_display() {
-   [ "$POWERBASH_PATH" == "off" ] && return # disable display
+    [[ ${#PWD} > $short_num ]] && short_path="..${PWD: -$short_num}"
 
-   if [ "$PWD" == "/" ]; then
-     local DIR_DISPLAY="/"
-   elif [ "$HOME" == "$PWD" ]; then
-     local DIR_DISPLAY="~"
-   elif [ "$POWERBASH_PATH" == "full" ]; then
-     local DIR_DISPLAY=$PWD
-   elif [ "$POWERBASH_PATH" == "working-directory" ]; then
-     local DIR_DISPLAY="${PWD##*/}"
-   elif [ "$POWERBASH_PATH" == "short-directory" ]; then
-     local DIR_DISPLAY=$(__powerbash_short_dir)
-   elif [ "$POWERBASH_PATH" == "short-path" ]; then
-     local DIR_DISPLAY=$(__powerbash_short_path)
-   else
-     local DIR_DISPLAY="${PWD##*/}"
-   fi
-   printf "$COLOR_DIR $DIR_DISPLAY $RESET"
- }
+    printf "$short_path"
+  }
 
- __powerbash_jobs_display() {
-   [ "$POWERBASH_JOBS" == "off" ] && return # disable display
+  __powerbash_mini_dir() {
+    local current_path="${PWD/$HOME/\~}"
 
-   local JOBS="$(jobs | wc -l)"
-   if [ "$JOBS" -ne "0" ]; then
-     local JOBS_DISPLAY="$COLOR_JOBS $JOBS $RESET"
-   else
-     local JOBS_DISPLAY=""
-   fi
-   printf "$JOBS_DISPLAY"
- }
+    IFS='/' read -a dir_array <<< "$current_path"
 
- __powerbash_symbol_display() {
-   [ "$POWERBASH_SYMBOL" == "off" ] && return # disable display
+    local path=""
+    local dir_len=$((${#dir_array[@]}-1))
 
-   # check if root or regular user
-   if [ $EUID -ne 0 ]; then
-     local SYMBOL_BG=$COLOR_SYMBOL_USER
-   else
-     local SYMBOL_BG=$COLOR_SYMBOL_ROOT
-   fi
-   printf "$SYMBOL_BG \\$ $RESET"
- }
+    for dir in ${dir_array[@]:0:$dir_len}; do
+      [[ $dir == '~' ]] && path="${dir:0:1}" || path="$path/${dir:0:1}"
+    done
+    path="$path/${dir_array[$dir_len]}"
 
- __powerbash_rc_display() {
-   [ "$POWERBASH_RC" == "off" ] && return # disable display
+    printf "$path"
+  }
 
-   # check the exit code of the previous command and display different
-   local rc=$1
-   if [ $rc -ne 0 ]; then
-     local RC_DISPLAY="$COLOR_RC $rc $RESET"
-   else
-     local RC_DISPLAY=""
-   fi
-   printf "$RC_DISPLAY"
- }
+  __powerbash_short_num_change() {
+    [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
+    [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
+    [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
+    [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
+    return 0
+  }
+
+  __powerbash_dir_display() {
+    [ "$POWERBASH_PATH" == "off" ] && return # disable display
+
+    local dir_display=""
+    case "$POWERBASH_PATH" in
+      full)               dir_display="\\w" ;;
+      working-directory)  dir_display="\\W" ;;
+      short-path)         dir_display="$(__powerbash_short_path)" ;;
+      short-directory)    dir_display="$(__powerbash_short_dir)" ;;
+      mini-dir)           dir_display="$(__powerbash_mini_dir)" ;;
+      *)                  dir_display="\\W" ;;
+    esac
+
+    [ "$dir_display" == "$HOME" ] && dir_display="~" # display ~ for home
+
+    printf "$COLOR_DIR $dir_display $RESET"
+  }
+
+  __powerbash_jobs_display() {
+    [ "$POWERBASH_JOBS" == "off" ] && return # disable display
+    [ $(jobs | wc -l) -ne "0" ] && printf "$COLOR_JOBS \\j $RESET"
+  }
+
+  __powerbash_symbol_display() {
+    [ "$POWERBASH_SYMBOL" == "off" ] && return # disable display
+
+    # different color for root and regular user
+    local symbol_bg=$COLOR_SYMBOL_USER
+    [ $EUID -eq 0 ] && symbol_bg=$COLOR_SYMBOL_ROOT
+
+    printf "$symbol_bg \\$ $RESET"
+  }
+
+  __powerbash_rc_display() {
+    [ "$POWERBASH_RC" == "off" ] && return # disable display
+    [ $1 -ne 0 ] && printf "$COLOR_RC $1 $RESET"
+  }
 
   __powerbash_ps1() {
     # keep this at top!!!
