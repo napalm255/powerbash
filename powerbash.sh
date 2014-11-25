@@ -11,7 +11,9 @@ complete -F __powerbash_complete powerbash
 
 powerbash() {
   case "$1" in
-    reload) source ~/.bashrc ;;
+    reload)
+      source ~/.bashrc
+    ;;
     prompt)
       case "$2" in
         on|off|system)
@@ -19,7 +21,7 @@ powerbash() {
         ;;
         *) echo "invalid option" ;;
       esac
-      ;;
+    ;;
     user|git|jobs|symbol|rc)
       case "$2" in
         on|off)
@@ -27,7 +29,7 @@ powerbash() {
         ;;
         *) echo "invalid option" ;;
       esac
-      ;;
+    ;;
     host)
       case "$2" in
         on|off|auto)
@@ -35,7 +37,7 @@ powerbash() {
         ;;
         *) echo "invalid option" ;;
       esac
-      ;;
+    ;;
     path)
       case "$2" in
         on|off|full|working-directory|short-directory|mini-dir)
@@ -49,15 +51,15 @@ powerbash() {
           ;;
         *) echo "invalid option" ;;
       esac
-      ;;
+    ;;
     term)
       case "$2" in
-        xterm|xterm\-256color|screen|screen\-256color)
+        xterm|xterm-256color|screen|screen-256color)
           export "TERM"="$2"
         ;;
         *) echo "invalid option" ;;
       esac
-      ;;
+    ;;
     *) echo "invalid option" ;;
   esac
 }
@@ -75,22 +77,22 @@ __powerbash_complete() {
     case "${prev}" in
       prompt)
         COMPREPLY=( $(compgen -W "on off system" -- ${cur}) )
-        ;;
+      ;;
       user|jobs|git|symbol|rc)
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-        ;;
+      ;;
       host)
         COMPREPLY=( $(compgen -W "on off auto" -- ${cur}) )
-        ;;
+      ;;
       path)
         COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path mini-dir" -- ${cur}) )
-        ;;
+      ;;
       short-path)
         COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
-        ;;
+      ;;
       term)
         COMPREPLY=( $(compgen -W "xterm xterm-256color screen screen-256color" -- ${cur}) )
-        ;;
+      ;;
     esac
   fi
 }
