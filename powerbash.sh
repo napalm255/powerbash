@@ -10,27 +10,55 @@ complete -F __powerbash_complete powerbash
 [ -z "$POWERBASH_SHORT_NUM" ] && POWERBASH_SHORT_NUM=20
 
 powerbash() {
-  case "$@" in
-    @(on|off|system))
-     export PROMPT_COMMAND="__powerbash_ps1 $1"
-     ;;
-    reload)
-      source ~/.bashrc
+  case "$1" in
+    reload) source ~/.bashrc ;;
+    prompt)
+      case "$2" in
+        on|off|system)
+          export PROMPT_COMMAND="__powerbash_ps1 $2"
+        ;;
+        *) echo "invalid option" ;;
+      esac
       ;;
-    @(user|host|path|git|jobs|symbol|rc)\ @(on|off|auto))
-      export "POWERBASH_${1^^}"="$2"
+    user|git|jobs|symbol|rc)
+      case "$2" in
+        on|off)
+          export "POWERBASH_${1^^}"="$2"
+        ;;
+        *) echo "invalid option" ;;
+      esac
       ;;
-    path\ @(full|working-directory|short-directory|short-path|mini-dir))
-      export "POWERBASH_${1^^}"="$2"
+    host)
+      case "$2" in
+        on|off|auto)
+          export "POWERBASH_${1^^}"="$2"
+        ;;
+        *) echo "invalid option" ;;
+      esac
       ;;
-    path\ short-path\ @(add|subtract))
-      __powerbash_short_num_change $3 $4
+    path)
+      case "$2" in
+        on|off|full|working-directory|short-directory|mini-dir)
+          export "POWERBASH_${1^^}"="$2"
+        ;;
+        short-path)
+          export "POWERBASH_${1^^}"="$2"
+          case "$3" in
+            add|subtract) __powerbash_short_num_change $3 $4 ;;
+          esac
+          ;;
+        *) echo "invalid option" ;;
+      esac
       ;;
-    term*)
-      export "TERM"="$2"
+    term)
+      case "$2" in
+        xterm|xterm\-256color|screen|screen\-256color)
+          export "TERM"="$2"
+        ;;
+        *) echo "invalid option" ;;
+      esac
       ;;
-    *)
-      echo "invalid option"
+    *) echo "invalid option" ;;
   esac
 }
 
@@ -39,13 +67,16 @@ __powerbash_complete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="on off system reload path user host jobs git symbol rc term"
+  opts="reload prompt path user host jobs git symbol rc term"
 
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   elif [ $COMP_CWORD -ge 2 ]; then
     case "${prev}" in
-      @(user|jobs|git|symbol|rc))
+      prompt)
+        COMPREPLY=( $(compgen -W "on off system" -- ${cur}) )
+        ;;
+      user|jobs|git|symbol|rc)
         COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
         ;;
       host)
