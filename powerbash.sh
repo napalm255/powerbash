@@ -3,16 +3,6 @@
 # exit for non-interactive
 [[ -z $PS1 ]] && return
 
-# save system PS1
-[[ -z "$POWERBASH_SYSTEM_PS1" ]] && POWERBASH_SYSTEM_PS1=$PS1
-
-# load saved configuration
-POWERBASH_CONFIG="$HOME/.powerbash_config"
-[[ -e "$POWERBASH_CONFIG" ]] && source ${POWERBASH_CONFIG}
-
-# enable auto completion
-complete -F __powerbash_complete powerbash
-
 powerbash() {
   case "$1" in
     reload) source ~/.bashrc ;;
@@ -118,12 +108,12 @@ __powerbash() {
       load)
         if [ -e "${POWERBASH_CONFIG}" ]; then
           while read p; do
-            [[ ! "$p" =~ ^# ]] && export $p
+            export $p
           done < ${POWERBASH_CONFIG}
         fi
         ;;
       save)
-        echo "# powerbash configuration" > ${POWERBASH_CONFIG}
+        echo -n "" > ${POWERBASH_CONFIG}
         env | grep "POWERBASH_" >> ${POWERBASH_CONFIG}
         ;;
     esac
@@ -312,5 +302,16 @@ __powerbash() {
   PROMPT_COMMAND="__powerbash_ps1 on"
 }
 
+# save system PS1
+[[ -z "$POWERBASH_SYSTEM_PS1" ]] && POWERBASH_SYSTEM_PS1=$PS1
+
+# start powerbash
 __powerbash
 unset __powerbash
+
+# load saved configuration
+POWERBASH_CONFIG="$HOME/.powerbash_config"
+[[ -e "$POWERBASH_CONFIG" ]] && __powerbash_config load
+
+# enable auto completion
+complete -F __powerbash_complete powerbash
