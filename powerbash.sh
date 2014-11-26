@@ -110,13 +110,16 @@ __powerbash() {
   __powerbash_config() {
     case "$1" in
       default)
-        rm ${POWERBASH_CONFIG}
+        [ -e "${POWERBASH_CONFIG}" ] && rm ${POWERBASH_CONFIG}
+        while read -r param; do
+          unset "${param}"
+        done <<< "`env | grep \"POWERBASH_\" | sed \"s/=.*//g\"`"
         ;;
       load)
         if [ -e "${POWERBASH_CONFIG}" ]; then
           while read p; do
             [[ ! "$p" =~ ^# ]] && export $p
-          done <${POWERBASH_CONFIG}
+          done < ${POWERBASH_CONFIG}
         fi
         ;;
       save)
@@ -170,10 +173,10 @@ __powerbash() {
     local stat="$(git status --porcelain --branch | head -n1)"
     local aheadN="$(echo $stat | grep -o 'ahead [0-9]*' | grep -o '[0-9]*')"
     local behindN="$(echo $stat | grep -o 'behind [0-9]*' | grep -o '[0-9]*')"
-    [ -n "$aheadN" ] && marks+=" $GIT_NEED_PUSH_SYMBOL$aheadN"
-    [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
+    [ -n "$aheadN" ] && marks+=" $POWERBASH_GIT_NEED_PUSH_SYMBOL$aheadN"
+    [ -n "$behindN" ] && marks+=" $POWERBASH_GIT_NEED_PULL_SYMBOL$behindN"
 
-    printf "$COLOR_GIT $GIT_BRANCH_SYMBOL$branch$marks $RESET"
+    printf "$COLOR_GIT $POWERBASH_GIT_BRANCH_SYMBOL$branch$marks $RESET"
   }
 
   __powerbash_user_display() {
