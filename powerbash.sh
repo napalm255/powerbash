@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-# enable auto completion
-complete -F __powerbash_complete powerbash
+# exit for non-interactive
+[[ -z $PS1 ]] && return
 
 # save system PS1
-[ -z "$POWERBASH_SYSTEM_PS1" ] && POWERBASH_SYSTEM_PS1=$PS1
+[[ -z "$POWERBASH_SYSTEM_PS1" ]] && POWERBASH_SYSTEM_PS1=$PS1
 
-# set default variables
-[ -z "$POWERBASH_SHORT_NUM" ] && POWERBASH_SHORT_NUM=20
+# enable auto completion
+complete -F __powerbash_complete powerbash
 
 powerbash() {
   case "$1" in
@@ -40,13 +40,13 @@ powerbash() {
     ;;
     path)
       case "$2" in
-        on|off|full|working-directory|short-directory|mini-dir)
+        off|full|working|parted|mini)
           export "POWERBASH_${1^^}"="$2"
         ;;
-        short-path)
+        short)
           export "POWERBASH_${1^^}"="$2"
           case "$3" in
-            add|subtract) __powerbash_short_num_change $3 $4 ;;
+            add|subtract) __powerbash_path_short_length $3 $4 ;;
           esac
           ;;
         *) echo "invalid option" ;;
@@ -72,24 +72,24 @@ __powerbash_complete() {
 
   if [ $COMP_CWORD -eq 1 ]; then
     # first level options
-    option_list="reload prompt path user host jobs git symbol rc term"
+    option_list="reload prompt user host path git jobs symbol rc term"
   elif [ $COMP_CWORD -eq 2 ]; then
     # second level options
     case "${prev}" in
       prompt) option_list="on off system" ;;
         user) option_list="on off" ;;
-        jobs) option_list="on off" ;;
+        host) option_list="on off auto" ;;
+        path) option_list="off full working short parted mini" ;;
          git) option_list="on off" ;;
+        jobs) option_list="on off" ;;
       symbol) option_list="on off" ;;
           rc) option_list="on off" ;;
-        host) option_list="on off auto" ;;
-        path) option_list="off full working-directory short-directory short-path mini-dir" ;;
         term) option_list="xterm xterm-256color screen screen-256color" ;;
     esac
   elif [ $COMP_CWORD -eq 3 ]; then
     # third level options
     case "${prev}" in
-      short-path) option_list="add subtract" ;;
+      short) option_list="add subtract" ;;
     esac
   fi
   COMPREPLY=( $(compgen -W "${option_list}" -- ${cur}) )
@@ -137,9 +137,10 @@ __powerbash() {
     fi
   }
 
-  __powerbash_git_info() { 
+  __powerbash_git_display() { 
+    [ -z "$POWERBASH_GIT" ] && POWERBASH_GIT="on" # sane default
     [ "$POWERBASH_GIT" == "off" ] && return # disable display
-    [ -x "$(which git)" ] || return    # git not found
+    [ -x "$(which git)" ] || return # git not found
 
     # get current branch name or short SHA1 hash for detached head
     local branch="$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --always 2>/dev/null)"
@@ -161,43 +162,53 @@ __powerbash() {
   }
 
   __powerbash_user_display() {
+    [ -z "$POWERBASH_USER" ] && POWERBASH_USER="on" # sane default
     [ "$POWERBASH_USER" == "off" ] && return # disable display
-
-    # check if running sudo
-    [ -n "$SUDO_USER" ] && local IS_SUDO="$COLOR_SUDO"
-    [[ -z "$POWERBASH_USER" || "$POWERBASH_USER" == "on" ]] && printf "$COLOR_USER$IS_SUDO \\\u $RESET"
+    [ -n "$SUDO_USER" ] && COLOR_USER="$COLOR_SUDO"
+    [ "$POWERBASH_USER" == "on" ] && printf "$COLOR_USER \\\u $RESET"
   }
 
   __powerbash_host_display() {
+    [ -z "$POWERBASH_HOST" ] && POWERBASH_HOST="auto" # sane default
     [ "$POWERBASH_HOST" == "off" ] && return # disable display
-
-    # check if on or ssh session
-    [[ "$POWERBASH_HOST" == "on" || "$POWERBASH_HOST" == "auto" && -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && printf "$COLOR_SSH@\\h $RESET"
+    [ "$POWERBASH_HOST" == "auto" ] && [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" ]] && POWERBASH_HOST=on
+    [ "$POWERBASH_HOST" == "on" ] && printf "$COLOR_SSH@\\h $RESET"
   }
 
-  __powerbash_short_dir() {
+  __powerbash_path_parted() {
     local dir_split_count=4
-    local short_dir="$PWD"
+    local dir_parted="$PWD"
     local dir_array=""
 
     IFS='/' read -a dir_array <<< "$PWD"
     if [ ${#dir_array[@]} -gt $dir_split_count ]; then
-      short_dir="/${dir_array[1]}/.../${dir_array[${#dir_array[@]}-2]}/${dir_array[${#dir_array[@]}-1]}"
+      local dir_parted="/${dir_array[1]}/.../${dir_array[${#dir_array[@]}-2]}/${dir_array[${#dir_array[@]}-1]}"
     fi
 
-    printf "$short_dir"
+    printf "$dir_parted"
   }
 
-  __powerbash_short_path() {
-    local short_num="$POWERBASH_SHORT_NUM"
+  __powerbash_path_short() {
+    [ -z "$POWERBASH_PATH_SHORT_LENGTH" ] && POWERBASH_PATH_SHORT_LENGTH=20 # sane default
+
     local short_path=$PWD
 
-    [[ ${#PWD} > $short_num ]] && short_path="..${PWD: -$short_num}"
+    [[ ${#PWD} > $POWERBASH_PATH_SHORT_LENGTH ]] && short_path="..${PWD: -$POWERBASH_PATH_SHORT_LENGTH}"
 
     printf "$short_path"
   }
 
-  __powerbash_mini_dir() {
+  __powerbash_path_short_length() {
+    [ -z "$POWERBASH_PATH_SHORT_LENGTH" ] && POWERBASH_PATH_SHORT_LENGTH=20 # sane default
+
+    [ -n $2 ] && local length="$2" # add/subtract by $2 when provided
+    [ -z "$length" ] && local length="1" # add/subtract by 1 by default
+    [ "$1" == "subtract" ] && ((POWERBASH_PATH_SHORT_LENGTH-=$length))
+    [ "$1" == "add" ] && ((POWERBASH_PATH_SHORT_LENGTH+=$length))
+    return 0
+  }
+
+  __powerbash_path_mini() {
     local current_path="${PWD/$HOME/\~}"
 
     IFS='/' read -a dir_array <<< "$current_path"
@@ -213,38 +224,32 @@ __powerbash() {
     printf "$path"
   }
 
-  __powerbash_short_num_change() {
-    [ -n $2 ] && local NUMBER="$2" #add/subtract by $2 when provided
-    [ -z "$NUMBER" ] && local NUMBER="1" #default add/subtract by 1
-    [ "$1" == "subtract" ] && ((POWERBASH_SHORT_NUM-=$NUMBER))
-    [ "$1" == "add" ] && ((POWERBASH_SHORT_NUM+=$NUMBER))
-    return 0
-  }
-
-  __powerbash_dir_display() {
+  __powerbash_path_display() {
+    [ -z "$POWERBASH_PATH" ] && POWERBASH_PATH="working" # sane default
     [ "$POWERBASH_PATH" == "off" ] && return # disable display
+    [ "$PWD" == "$HOME" ] && POWERBASH_PATH="home" #display ~ for home
 
     local dir_display=""
     case "$POWERBASH_PATH" in
-      full)               dir_display="\\w" ;;
-      working-directory)  dir_display="\\W" ;;
-      short-path)         dir_display="$(__powerbash_short_path)" ;;
-      short-directory)    dir_display="$(__powerbash_short_dir)" ;;
-      mini-dir)           dir_display="$(__powerbash_mini_dir)" ;;
-      *)                  dir_display="\\W" ;;
+         home) dir_display="~" ;;
+         full) dir_display="\\w" ;;
+      working) dir_display="\\W" ;;
+        short) dir_display="$(__powerbash_path_short)" ;;
+       parted) dir_display="$(__powerbash_path_parted)" ;;
+         mini) dir_display="$(__powerbash_path_mini)" ;;
     esac
-
-    [ "$dir_display" == "$HOME" ] && dir_display="~" # display ~ for home
 
     printf "$COLOR_DIR $dir_display $RESET"
   }
 
   __powerbash_jobs_display() {
+    [ -z "$POWERBASH_JOBS" ] && POWERBASH_JOBS="on" # sane default
     [ "$POWERBASH_JOBS" == "off" ] && return # disable display
     [ $(jobs | wc -l) -ne "0" ] && printf "$COLOR_JOBS \\j $RESET"
   }
 
   __powerbash_symbol_display() {
+    [ -z "$POWERBASH_SYMBOL" ] && POWERBASH_SYMBOL="on" # sane default
     [ "$POWERBASH_SYMBOL" == "off" ] && return # disable display
 
     # different color for root and regular user
@@ -255,6 +260,7 @@ __powerbash() {
   }
 
   __powerbash_rc_display() {
+    [ -z "$POWERBASH_RC" ] && POWERBASH_RC="on" # sane default
     [ "$POWERBASH_RC" == "off" ] && return # disable display
     [ $1 -ne 0 ] && printf "$COLOR_RC $1 $RESET"
   }
@@ -275,8 +281,8 @@ __powerbash() {
         PS1=""
         PS1+="$(__powerbash_user_display)"
         PS1+="$(__powerbash_host_display)"
-        PS1+="$(__powerbash_dir_display)"
-        PS1+="$(__powerbash_git_info)"
+        PS1+="$(__powerbash_path_display)"
+        PS1+="$(__powerbash_git_display)"
         PS1+="$(__powerbash_jobs_display)"
         PS1+="$(__powerbash_symbol_display)"
         PS1+="$(__powerbash_rc_display ${RETURN_CODE})"
