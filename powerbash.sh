@@ -11,38 +11,28 @@ complete -F __powerbash_complete powerbash
 
 powerbash() {
   case "$1" in
-    reload)
-      source ~/.bashrc
-    ;;
+    reload) source ~/.bashrc ;;
     prompt)
       case "$2" in
-        on|off|system)
-          export PROMPT_COMMAND="__powerbash_ps1 $2"
-        ;;
+        on|off|system) export PROMPT_COMMAND="__powerbash_ps1 $2" ;;
         *) echo "invalid option" ;;
       esac
     ;;
     user|git|jobs|symbol|rc)
       case "$2" in
-        on|off)
-          export "POWERBASH_${1^^}"="$2"
-        ;;
+        on|off) export "POWERBASH_${1^^}"="$2" ;;
         *) echo "invalid option" ;;
       esac
     ;;
     host)
       case "$2" in
-        on|off|auto)
-          export "POWERBASH_${1^^}"="$2"
-        ;;
+        on|off|auto) export "POWERBASH_${1^^}"="$2" ;;
         *) echo "invalid option" ;;
       esac
     ;;
     path)
       case "$2" in
-        off|full|working|parted|mini)
-          export "POWERBASH_${1^^}"="$2"
-        ;;
+        off|full|working|parted|mini) export "POWERBASH_${1^^}"="$2" ;;
         short)
           export "POWERBASH_${1^^}"="$2"
           case "$3" in
@@ -54,9 +44,7 @@ powerbash() {
     ;;
     term)
       case "$2" in
-        xterm|xterm-256color|screen|screen-256color)
-          export "TERM"="$2"
-        ;;
+        xterm|xterm-256color|screen|screen-256color) export "TERM"="$2" ;;
         *) echo "invalid option" ;;
       esac
     ;;
@@ -192,7 +180,6 @@ __powerbash() {
     [ -z "$POWERBASH_PATH_SHORT_LENGTH" ] && POWERBASH_PATH_SHORT_LENGTH=20 # sane default
 
     local short_path=$PWD
-
     [[ ${#PWD} > $POWERBASH_PATH_SHORT_LENGTH ]] && short_path="..${PWD: -$POWERBASH_PATH_SHORT_LENGTH}"
 
     printf "$short_path"
@@ -205,6 +192,7 @@ __powerbash() {
     [ -z "$length" ] && local length="1" # add/subtract by 1 by default
     [ "$1" == "subtract" ] && ((POWERBASH_PATH_SHORT_LENGTH-=$length))
     [ "$1" == "add" ] && ((POWERBASH_PATH_SHORT_LENGTH+=$length))
+
     return 0
   }
 
