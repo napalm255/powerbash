@@ -95,17 +95,17 @@ __powerbash_complete() {
 }
 
 __powerbash() {
-    # define variables
-    POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
-    POWERBASH_ARROWS=( "⇠" "⇡" "⇢" "⇣" )
-    POWERBASH_GIT_BRANCH_SYMBOL=${POWERBASH_ICONS[1]}
-    POWERBASH_GIT_BRANCH_CHANGED_SYMBOL=${POWERBASH_ICONS[8]}
-    POWERBASH_GIT_NEED_PUSH_SYMBOL=${POWERBASH_ARROWS[1]}
-    POWERBASH_GIT_NEED_PULL_SYMBOL=${POWERBASH_ARROWS[3]}
-    DIM="\[$(tput dim)\]"
-    REVERSE="\[$(tput rev)\]"
-    RESET="\[$(tput sgr0)\]"
-    BOLD="\[$(tput bold)\]"
+  # define variables
+  POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
+  POWERBASH_ARROWS=( "⇠" "⇡" "⇢" "⇣" )
+  POWERBASH_GIT_BRANCH_SYMBOL=${POWERBASH_ICONS[1]}
+  POWERBASH_GIT_BRANCH_CHANGED_SYMBOL=${POWERBASH_ICONS[8]}
+  POWERBASH_GIT_NEED_PUSH_SYMBOL=${POWERBASH_ARROWS[1]}
+  POWERBASH_GIT_NEED_PULL_SYMBOL=${POWERBASH_ARROWS[3]}
+  DIM="\[$(tput dim)\]"
+  REVERSE="\[$(tput rev)\]"
+  RESET="\[$(tput sgr0)\]"
+  BOLD="\[$(tput bold)\]"
 
   __powerbash_config() {
     case "$1" in
