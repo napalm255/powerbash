@@ -65,36 +65,34 @@ powerbash() {
 }
 
 __powerbash_complete() {
-  local cur prev opts
+  local cur prev option_list
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="reload prompt path user host jobs git symbol rc term"
 
   if [ $COMP_CWORD -eq 1 ]; then
-    COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-  elif [ $COMP_CWORD -ge 2 ]; then
+    # first level options
+    option_list="reload prompt path user host jobs git symbol rc term"
+  elif [ $COMP_CWORD -eq 2 ]; then
+    # second level options
     case "${prev}" in
-      prompt)
-        COMPREPLY=( $(compgen -W "on off system" -- ${cur}) )
-      ;;
-      user|jobs|git|symbol|rc)
-        COMPREPLY=( $(compgen -W "on off" -- ${cur}) )
-      ;;
-      host)
-        COMPREPLY=( $(compgen -W "on off auto" -- ${cur}) )
-      ;;
-      path)
-        COMPREPLY=( $(compgen -W "off full working-directory short-directory short-path mini-dir" -- ${cur}) )
-      ;;
-      short-path)
-        COMPREPLY=( $(compgen -W "add subtract" -- ${cur}) )
-      ;;
-      term)
-        COMPREPLY=( $(compgen -W "xterm xterm-256color screen screen-256color" -- ${cur}) )
-      ;;
+      prompt) option_list="on off system" ;;
+        user) option_list="on off" ;;
+        jobs) option_list="on off" ;;
+         git) option_list="on off" ;;
+      symbol) option_list="on off" ;;
+          rc) option_list="on off" ;;
+        host) option_list="on off auto" ;;
+        path) option_list="off full working-directory short-directory short-path mini-dir" ;;
+        term) option_list="xterm xterm-256color screen screen-256color" ;;
+    esac
+  elif [ $COMP_CWORD -eq 3 ]; then
+    # third level options
+    case "${prev}" in
+      short-path) option_list="add subtract" ;;
     esac
   fi
+  COMPREPLY=( $(compgen -W "${option_list}" -- ${cur}) )
 }
 
 __powerbash() {
