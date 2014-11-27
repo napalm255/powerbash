@@ -19,6 +19,8 @@ Powerline-style Bash prompt in pure Bash script.
 * Fast execution (no noticable delay)
 * No need for patched fonts
 
+## Screenshot
+![powerbash](/../screenshots/screenshot.png?raw=true "powerbash")
 
 ## Installation
 
