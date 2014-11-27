@@ -1,37 +1,45 @@
 # powerbash
 
-Powerline-style Bash prompt in pure Bash script. 
+powerline-style bash prompt in pure bash script. 
 
 
 ## Features
 
+* 'powerbash' command for configuration
+* Bash completion support (powerbash [tab])
+* Displays username, hostname, path, git information, jobs count, symbol ($/#), return code
+* Color code for root, sudo, jobs count, return code
 * Git branch: display current git branch name, or short SHA1 hash when the head is detached
 * Git branch: display "+" symbol when current branch is changed but uncommited
 * Git branch: display "⇡" symbol and the difference in the number of commits when the current branch is ahead of remote
 * Git branch: display "⇣" symbol and the difference in the number of commits when the current branch is behind of remote
-* Username displayed
-* Hostname displayed only when SSH'd
-* Color code for root
-* Color code for sudo session
-* Color code with exit code for the previously failed command
-* Color code with jobs count
-* Directory shortening ('/some/.../long/path' or '..me/long/path')
+* Three directory shortening modes (/full/path/to/no/where)
+  * /full/.../no/where
+  * ..o/no/where
+  * /f/p/t/n/where
 * Fast execution (no noticable delay)
 * No need for patched fonts
 
 ## Screenshot
 ![powerbash](/../screenshots/screenshot.png?raw=true "powerbash")
 
-## Installation
+## Per-User Installation
 
 Download the Bash script
 
-    curl -L https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh > ~/.powerbash.sh
+    curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh > ~/.powerbash.sh
 
-And source it in your `.bashrc` for your user account
+And source it in '~/.bashrc' for your user account
 
     source ~/.powerbash.sh
 
-or for a global installation create a soft link in /etc/profiles.d
+## Global Installation
 
-    ln -s /etc/profiles.d/powerbash.sh ./powerbash.sh
+Download the Bash script
+
+    sudo curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh > /etc/profile.d/z_powerbash.sh
+
+Note:
+
+    powerbash is most consistent when it is the last profile.d script to run.
+
