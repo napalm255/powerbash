@@ -9,11 +9,12 @@ powerline-style bash prompt in pure bash script.
 * Bash completion support (powerbash [tab])
 * Displays username, hostname, path, git information, jobs count, symbol ($/#), return code
 * Color code for root, sudo, jobs count, return code
-* Git branch: display current git branch name, or short SHA1 hash when the head is detached
-* Git branch: display "+" symbol when current branch is changed but uncommited
-* Git branch: display "⇡" symbol and the difference in the number of commits when the current branch is ahead of remote
-* Git branch: display "⇣" symbol and the difference in the number of commits when the current branch is behind of remote
-* Three directory shortening modes (/full/path/to/no/where)
+* Git information:
+  * display current git branch name, or short SHA1 hash when the head is detached
+  * display "+" symbol when current branch is changed but uncommited
+  * display "⇡" symbol and the difference in the number of commits when the current branch is ahead of remote
+  * display "⇣" symbol and the difference in the number of commits when the current branch is behind of remote
+* Three directory shortening modes (/full/path/to/no/where):
   * /full/.../no/where
   * ..o/no/where
   * /f/p/t/n/where
