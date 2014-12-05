@@ -200,7 +200,7 @@ __powerbash() {
     [ -z "$POWERBASH_PATH_SHORT_LENGTH" ] && POWERBASH_PATH_SHORT_LENGTH=20 # sane default
 
     local short_path=$PWD
-    [[ ${#PWD} > $POWERBASH_PATH_SHORT_LENGTH ]] && short_path="..${PWD: -$POWERBASH_PATH_SHORT_LENGTH}"
+    (( ${#PWD} > $POWERBASH_PATH_SHORT_LENGTH )) && short_path="..${PWD: -$POWERBASH_PATH_SHORT_LENGTH}"
 
     printf "$short_path"
   }
