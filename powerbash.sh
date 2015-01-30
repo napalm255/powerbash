@@ -86,8 +86,9 @@ __powerbash_complete() {
 
 __powerbash() {
   # define variables
-  POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
+  POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" "🐍" )
   POWERBASH_ARROWS=( "⇠" "⇡" "⇢" "⇣" )
+  POWERBASH_VIRTUALENV_SYMBOL=${POWERBASH_ICONS[9]}
   POWERBASH_GIT_BRANCH_SYMBOL=${POWERBASH_ICONS[1]}
   POWERBASH_GIT_BRANCH_CHANGED_SYMBOL=${POWERBASH_ICONS[8]}
   POWERBASH_GIT_NEED_PUSH_SYMBOL=${POWERBASH_ARROWS[1]}
@@ -140,9 +141,23 @@ __powerbash() {
       COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
       COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
       COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
+      COLOR_VIRTUALENV="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
       COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
       COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
     fi
+  }
+  
+  __powerbash_virtualenv_display() {
+    [ -z "$POWERBASH_VENV" ] && POWERBASH_VENV="on" # sane default
+    [ "$POWERBASH_VENV" == "off" ] && return # disable display
+    [ ! -v VIRTUAL_ENV_DISABLE_PROMPT ]
+    [ -n "$VIRTUAL_ENV" ] || return # virtualenvironment not found
+
+    # get virtualenv name
+    local venv="$(basename $VIRTUAL_ENV)"
+    [ -n "$venv" ] || return
+
+    printf "$COLOR_VIRTUALENV $POWERBASH_VIRTUALENV_SYMBOL $venv $RESET"
   }
 
   __powerbash_git_display() { 
@@ -287,6 +302,7 @@ __powerbash() {
 
         # set prompt
         PS1=""
+        PS1+="$(__powerbash_virtualenv_display)"
         PS1+="$(__powerbash_user_display)"
         PS1+="$(__powerbash_host_display)"
         PS1+="$(__powerbash_path_display)"
