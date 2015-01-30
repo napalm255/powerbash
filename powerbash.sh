@@ -150,7 +150,6 @@ __powerbash() {
   __powerbash_virtualenv_display() {
     [ -z "$POWERBASH_VENV" ] && POWERBASH_VENV="on" # sane default
     [ "$POWERBASH_VENV" == "off" ] && return # disable display
-    [ ! -v VIRTUAL_ENV_DISABLE_PROMPT ]
     [ -n "$VIRTUAL_ENV" ] || return # virtualenvironment not found
 
     # get virtualenv name
