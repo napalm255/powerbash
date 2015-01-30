@@ -18,6 +18,16 @@ powerbash() {
         *) echo "invalid option" ;;
       esac
     ;;
+    py)
+      case "$2" in
+        virtualenv)
+          case "$3" in
+            on|off|auto) export "POWERBASH_${1^^}_${2^^}"="$3" ;;
+          esac
+          ;;
+        *) echo "invalid option" ;;
+      esac
+    ;;
     user|git|jobs|symbol|rc)
       case "$2" in
         on|off) export "POWERBASH_${1^^}"="$2" ;;
@@ -60,12 +70,13 @@ __powerbash_complete() {
 
   if [ $COMP_CWORD -eq 1 ]; then
     # first level options
-    option_list="reload prompt config user host path git jobs symbol rc term"
+    option_list="reload prompt config py user host path git jobs symbol rc term"
   elif [ $COMP_CWORD -eq 2 ]; then
     # second level options
     case "${prev}" in
       prompt) option_list="on off system" ;;
       config) option_list="default load save" ;;
+          py) option_list="virtualenv" ;;
         user) option_list="on off" ;;
         host) option_list="on off auto" ;;
         path) option_list="off full working short parted mini" ;;
@@ -78,6 +89,7 @@ __powerbash_complete() {
   elif [ $COMP_CWORD -eq 3 ]; then
     # third level options
     case "${prev}" in
+      virtualenv) option_list="on off auto" ;;
       short) option_list="add subtract" ;;
     esac
   fi
@@ -86,8 +98,9 @@ __powerbash_complete() {
 
 __powerbash() {
   # define variables
-  POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" )
+  POWERBASH_ICONS=( "⚑" "»" "♆" "☀" "♞" "☯" "☢" "❄" "+" "▶" )
   POWERBASH_ARROWS=( "⇠" "⇡" "⇢" "⇣" )
+  POWERBASH_PY_VIRTUALENV_SYMBOL=${POWERBASH_ICONS[9]}
   POWERBASH_GIT_BRANCH_SYMBOL=${POWERBASH_ICONS[1]}
   POWERBASH_GIT_BRANCH_CHANGED_SYMBOL=${POWERBASH_ICONS[8]}
   POWERBASH_GIT_NEED_PUSH_SYMBOL=${POWERBASH_ARROWS[1]}
@@ -140,9 +153,22 @@ __powerbash() {
       COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
       COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
       COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
+      COLOR_PY_VIRTUALENV="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
       COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
       COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
     fi
+  }
+  
+  __powerbash_py_virtualenv_display() {
+    [ -z "$POWERBASH_PY_VIRTUALENV" ] && POWERBASH_PY_VIRTUALENV="on" # sane default
+    [ "$POWERBASH_PY_VIRTUALENV" == "off" ] && return # disable display
+    [ -n "$VIRTUAL_ENV" ] || return # virtualenvironment not found
+
+    # get virtualenv name
+    local venv="$(basename $VIRTUAL_ENV)"
+    [ -n "$venv" ] || return
+
+    printf "$COLOR_PY_VIRTUALENV $POWERBASH_PY_VIRTUALENV_SYMBOL $venv $RESET"
   }
 
   __powerbash_git_display() { 
@@ -287,6 +313,7 @@ __powerbash() {
 
         # set prompt
         PS1=""
+        PS1+="$(__powerbash_py_virtualenv_display)"
         PS1+="$(__powerbash_user_display)"
         PS1+="$(__powerbash_host_display)"
         PS1+="$(__powerbash_path_display)"
