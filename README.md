@@ -22,7 +22,7 @@ powerline-style bash prompt in pure bash script.
 * No need for patched fonts
 
 ## Asciinema
-[![asciicast](https://asciinema.org/a/30835.png)](https://asciinema.org/a/30835)
+[![asciicast](https://asciinema.org/a/30836.png)](https://asciinema.org/a/30836)
 
 ## Per-User Installation
 
