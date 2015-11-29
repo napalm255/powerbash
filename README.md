@@ -21,8 +21,8 @@ powerline-style bash prompt in pure bash script.
 * Fast execution (no noticable delay)
 * No need for patched fonts
 
-## Screenshot
-![powerbash](/../screenshots/screenshot.png?raw=true "powerbash")
+## Asciinema
+[![asciicast](https://asciinema.org/a/30835.png)](https://asciinema.org/a/30835)
 
 ## Per-User Installation
 
