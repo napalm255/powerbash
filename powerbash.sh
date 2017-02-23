@@ -158,7 +158,7 @@ __powerbash() {
       COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
     fi
   }
-  
+
   __powerbash_py_virtualenv_display() {
     [ -z "$POWERBASH_PY_VIRTUALENV" ] && POWERBASH_PY_VIRTUALENV="on" # sane default
     [ "$POWERBASH_PY_VIRTUALENV" == "off" ] && return # disable display
@@ -171,13 +171,13 @@ __powerbash() {
     printf "$COLOR_PY_VIRTUALENV $POWERBASH_PY_VIRTUALENV_SYMBOL $venv $RESET"
   }
 
-  __powerbash_git_display() { 
+  __powerbash_git_display() {
     [ -z "$POWERBASH_GIT" ] && POWERBASH_GIT="on" # sane default
     [ "$POWERBASH_GIT" == "off" ] && return # disable display
     [ -x "$(which git)" ] || return # git not found
 
     # get current branch name or short SHA1 hash for detached head
-    local branch="$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --always 2>/dev/null)"
+    local branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || git describe --tags --always 2>/dev/null)"
     [ -n "$branch" ] || return  # git branch not found
 
     local marks
@@ -186,11 +186,11 @@ __powerbash() {
     [ -n "$(git status --porcelain)" ] && marks+=" $POWERBASH_GIT_BRANCH_CHANGED_SYMBOL"
 
     # how many commits local branch is ahead/behind of remote?
-    local stat="$(git status --porcelain --branch | head -n1)"
-    local aheadN="$(echo $stat | grep -o 'ahead [0-9]*' | grep -o '[0-9]*')"
-    local behindN="$(echo $stat | grep -o 'behind [0-9]*' | grep -o '[0-9]*')"
-    [ -n "$aheadN" ] && marks+=" $POWERBASH_GIT_NEED_PUSH_SYMBOL$aheadN"
-    [ -n "$behindN" ] && marks+=" $POWERBASH_GIT_NEED_PULL_SYMBOL$behindN"
+    local stat="$(git rev-list --left-right --boundary @{u}...)"
+    local aheadN="$(echo stat | grep -o ">" -c)"
+    local behindN="$(echo stat | grep -o "<" -c)"
+    [ "$aheadN" -gt 0 ] && marks+=" $POWERBASH_GIT_NEED_PUSH_SYMBOL$aheadN"
+    [ "$behindN" -gt 0 ] && marks+=" $POWERBASH_GIT_NEED_PULL_SYMBOL$behindN"
 
     printf "$COLOR_GIT $POWERBASH_GIT_BRANCH_SYMBOL$branch$marks $RESET"
   }
@@ -303,7 +303,7 @@ __powerbash() {
     # keep this at top!!!
     # capture latest return code
     local RETURN_CODE=$?
-    
+
     case "$1" in
       off)    PS1='\$ ' ;;
       system) PS1=$POWERBASH_SYSTEM_PS1 ;;
