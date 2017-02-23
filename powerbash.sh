@@ -186,7 +186,7 @@ __powerbash() {
     [ -n "$(git status --porcelain)" ] && marks+=" $POWERBASH_GIT_BRANCH_CHANGED_SYMBOL"
 
     # how many commits local branch is ahead/behind of remote?
-    local stat="$(git rev-list --left-right --boundary @{u}...)"
+    local stat="$(git rev-list --left-right --boundary @{u}... 2>/dev/null)"
     local aheadN="$(echo $stat | grep -o ">" -c)"
     local behindN="$(echo $stat | grep -o "<" -c)"
     [ "$aheadN" -gt 0 ] && marks+=" $POWERBASH_GIT_NEED_PUSH_SYMBOL$aheadN"
