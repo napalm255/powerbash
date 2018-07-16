@@ -22,7 +22,7 @@ powerbash() {
       case "$2" in
         virtualenv)
           case "$3" in
-            on|off|auto) export "POWERBASH_${1^^}_${2^^}"="$3" ;;
+            on|off|icon|short) export "POWERBASH_${1^^}_${2^^}"="$3" ;;
           esac
           ;;
         *) echo "invalid option" ;;
@@ -89,7 +89,7 @@ __powerbash_complete() {
   elif [ $COMP_CWORD -eq 3 ]; then
     # third level options
     case "${prev}" in
-      virtualenv) option_list="on off auto" ;;
+      virtualenv) option_list="on off icon short" ;;
       short) option_list="add subtract" ;;
     esac
   fi
@@ -165,10 +165,12 @@ __powerbash() {
     [ -n "$VIRTUAL_ENV" ] || return # virtualenvironment not found
 
     # get virtualenv name
-    local venv="$(basename $VIRTUAL_ENV)"
+    local venv="$POWERBASH_PY_VIRTUALENV_SYMBOL"
+    [ "$POWERBASH_PY_VIRTUALENV" == "on" ] && local venv="$venv \[$(basename $VIRTUAL_ENV)\]"
+    [ "$POWERBASH_PY_VIRTUALENV" == "short" ] && local venv="$venv \[$(basename $VIRTUAL_ENV | cut -c1-5)\]"
     [ -n "$venv" ] || return
 
-    printf "$COLOR_PY_VIRTUALENV $POWERBASH_PY_VIRTUALENV_SYMBOL $venv $RESET"
+    printf "$COLOR_PY_VIRTUALENV $venv $RESET"
   }
 
   __powerbash_git_display() {
