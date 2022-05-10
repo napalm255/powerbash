@@ -1,7 +1,9 @@
 # powerbash
 
-powerline-style bash prompt in pure bash script. 
+powerline-style bash prompt in pure bash script.
 
+
+[![CodeFactor](https://www.codefactor.io/repository/github/napalm255/powerbash/badge)](https://www.codefactor.io/repository/github/napalm255/powerbash)
 
 ## Features
 
