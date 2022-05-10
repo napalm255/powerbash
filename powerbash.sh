@@ -242,7 +242,7 @@ __powerbash() {
   __powerbash_path_short_length() {
     [ -z "$POWERBASH_PATH_SHORT_LENGTH" ] && POWERBASH_PATH_SHORT_LENGTH=20 # sane default
 
-    [ -n $2 ] && local length="$2" # add/subtract by $2 when provided
+    [ -n "$2" ] && local length="$2" # add/subtract by $2 when provided
     [ -z "$length" ] && local length="1" # add/subtract by 1 by default
     [ "$1" == "subtract" ] && ((POWERBASH_PATH_SHORT_LENGTH-=$length))
     [ "$1" == "add" ] && ((POWERBASH_PATH_SHORT_LENGTH+=$length))
