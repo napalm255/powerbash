@@ -116,7 +116,7 @@ __powerbash() {
         [ -e "${POWERBASH_CONFIG}" ] && rm ${POWERBASH_CONFIG}
         while read -r param; do
           unset "${param}"
-        done <<< "`env | grep \"POWERBASH_\" | sed \"s/=.*//g\"`"
+        done <<< "$(env | grep 'POWERBASH_' | sed 's/=.*//g')"
         ;;
       load)
         if [ -e "${POWERBASH_CONFIG}" ]; then
