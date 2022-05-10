@@ -185,7 +185,13 @@ __powerbash() {
     local marks
 
     # branch is modified?
-    [ -n "$(git status --porcelain)" ] && marks+=" $POWERBASH_GIT_BRANCH_CHANGED_SYMBOL"
+    local git_status="$(git status --porcelain 2>&1)"
+    if [ "$git_status" == "fatal: this operation must be run in a work tree" ]; then
+      pushd $(git worktree list | sed -E 's/(\/.*)\s+[a-zA-Z0-9]*\s\[.*\]/\1/g') > /dev/null
+      git_status="$(git status --porcelain)"
+      popd > /dev/null
+    fi
+    [ -n "$git_status" ] && marks+=" $POWERBASH_GIT_BRANCH_CHANGED_SYMBOL"
 
     # how many commits local branch is ahead/behind of remote?
     local stat="$(git rev-list --left-right --boundary @{u}... 2>/dev/null)"
