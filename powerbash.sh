@@ -116,11 +116,11 @@ __powerbash() {
         [ -e "${POWERBASH_CONFIG}" ] && rm ${POWERBASH_CONFIG}
         while read -r param; do
           unset "${param}"
-        done <<< "`env | grep \"POWERBASH_\" | sed \"s/=.*//g\"`"
+        done <<< "$(env | grep 'POWERBASH_' | sed 's/=.*//g')"
         ;;
       load)
         if [ -e "${POWERBASH_CONFIG}" ]; then
-          while read p; do
+          while read -r p; do
             export $p
           done < ${POWERBASH_CONFIG}
         fi
@@ -222,7 +222,7 @@ __powerbash() {
     local dir_parted="$PWD"
     local dir_array=""
 
-    IFS='/' read -a dir_array <<< "$PWD"
+    IFS='/' read -ra dir_array <<< "$PWD"
     if [ ${#dir_array[@]} -gt $dir_split_count ]; then
       local dir_parted="/${dir_array[1]}/.../${dir_array[${#dir_array[@]}-2]}/${dir_array[${#dir_array[@]}-1]}"
     fi
@@ -242,7 +242,7 @@ __powerbash() {
   __powerbash_path_short_length() {
     [ -z "$POWERBASH_PATH_SHORT_LENGTH" ] && POWERBASH_PATH_SHORT_LENGTH=20 # sane default
 
-    [ -n $2 ] && local length="$2" # add/subtract by $2 when provided
+    [ -n "$2" ] && local length="$2" # add/subtract by $2 when provided
     [ -z "$length" ] && local length="1" # add/subtract by 1 by default
     [ "$1" == "subtract" ] && ((POWERBASH_PATH_SHORT_LENGTH-=$length))
     [ "$1" == "add" ] && ((POWERBASH_PATH_SHORT_LENGTH+=$length))
@@ -253,7 +253,7 @@ __powerbash() {
   __powerbash_path_mini() {
     local current_path="${PWD/$HOME/\~}"
 
-    IFS='/' read -a dir_array <<< "$current_path"
+    IFS='/' read -ra dir_array <<< "$current_path"
 
     local path=""
     local dir_len=$((${#dir_array[@]}-1))
