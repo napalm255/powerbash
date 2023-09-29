@@ -345,7 +345,7 @@ __powerbash
 unset __powerbash
 
 # load saved configuration
-POWERBASH_CONFIG="$HOME/.powerbash_config"
+POWERBASH_CONFIG="$HOME/.config/powerbashrc"
 [[ -e "$POWERBASH_CONFIG" ]] && __powerbash_config load
 
 # enable auto completion
