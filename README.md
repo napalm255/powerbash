@@ -41,7 +41,7 @@ And source it in '~/.bashrc' for your user account
 
 Download the Bash script
 
-    sudo curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh > /etc/profile.d/z_powerbash.sh
+    sudo curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh -o /etc/profile.d/z_powerbash.sh
 
 Note:
 
