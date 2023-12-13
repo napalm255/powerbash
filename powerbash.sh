@@ -22,7 +22,7 @@ powerbash() {
       case "$2" in
         virtualenv)
           case "$3" in
-            on|off|icon|short) export "POWERBASH_${1^^}_${2^^}"="$3" ;;
+              on|off|icon|short) export "POWERBASH_$(echo $1 | tr '[:lower:]' '[:upper:]')_$(echo $2 | tr '[:lower:]' '[:upper:]')"="$3" ;;
           esac
           ;;
         *) echo "invalid option" ;;
@@ -30,21 +30,21 @@ powerbash() {
     ;;
     user|git|jobs|symbol|rc)
       case "$2" in
-        on|off) export "POWERBASH_${1^^}"="$2" ;;
+          on|off) export "POWERBASH_$(echo $1 | tr '[:lower:]' '[:upper:]')"="$2" ;;
         *) echo "invalid option" ;;
       esac
     ;;
     host)
       case "$2" in
-        on|off|auto) export "POWERBASH_${1^^}"="$2" ;;
+          on|off|auto) export "POWERBASH_$(echo $1 | tr '[:lower:]' '[:upper:]')"="$2" ;;
         *) echo "invalid option" ;;
       esac
     ;;
     path)
       case "$2" in
-        off|full|working|parted|mini) export "POWERBASH_${1^^}"="$2" ;;
+          off|full|working|parted|mini) export "POWERBASH_$(echo $1 | tr '[:lower:]' '[:upper:]')"="$2" ;;
         short)
-          export "POWERBASH_${1^^}"="$2"
+            export "POWERBASH_$(echo $1 | tr '[:lower:]' '[:upper:]')"="$2"
           case "$3" in
             add|subtract) __powerbash_path_short_length $3 $4 ;;
           esac
