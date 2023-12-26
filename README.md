@@ -10,7 +10,7 @@ powerline-style bash prompt in pure bash script.
 
 * 'powerbash' command for configuration
 * Bash completion support (powerbash [tab])
-* Displays username, hostname, path, git information, jobs count, symbol ($/#), return code
+* Displays username, hostname, path, git information, virtual env, jobs count, symbol ($/#), return code
 * Color code for root, sudo, jobs count, return code
 * Git information:
   * display current git branch name, or short SHA1 hash when the head is detached
