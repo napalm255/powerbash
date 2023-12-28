@@ -357,7 +357,7 @@ __powerbash() {
     elif [[ "${PROMPT_COMMAND}" == *"__powerbash_set_ps1"* ]]; then
       PROMPT_COMMAND="$(sed -E "s/__powerbash_set_ps1 [a-z]+/__powerbash_set_ps1 $1/" <<< ${PROMPT_COMMAND})"
     else
-      PROMPT_COMMAND="__powerbash_set_ps1 $1;${PROMPT_COMMAND}"
+      PROMPT_COMMAND="${PROMPT_COMMAND};__powerbash_set_ps1 $1"
     fi
   }
 
