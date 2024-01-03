@@ -171,8 +171,8 @@ __powerbash() {
 
     # build string to display virtualenv name
     local venv="$POWERBASH_PY_VIRTUALENV_SYMBOL"
-    [ "$POWERBASH_PY_VIRTUALENV" == "on" ] && local venv="$venv \[$(basename $venv_name)\]"
-    [ "$POWERBASH_PY_VIRTUALENV" == "short" ] && local venv="$venv \[$(basename $venv_name | cut -c1-5)\]"
+    [ "$POWERBASH_PY_VIRTUALENV" == "on" ] && local venv="$venv $(basename $venv_name)"
+    [ "$POWERBASH_PY_VIRTUALENV" == "short" ] && local venv="$venv $(basename $venv_name | cut -c1-5)"
     [ -n "$venv" ] || return
 
     printf "$COLOR_PY_VIRTUALENV $venv $RESET"
