@@ -1,4 +1,6 @@
 ---
 site_name: powerbash
-docs_dir: docs
+docs_dir: .
 site_dir: site
+exclude_docs: |
+  /site/
