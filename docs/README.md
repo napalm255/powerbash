@@ -5,6 +5,7 @@ powerline-style bash prompt in pure bash script.
 
 [![Languages](https://img.shields.io/github/languages/top/napalm255/powerbash)](https://img.shields.io/github/languages/top/napalm255/powerbash)
 [![CodeFactor](https://www.codefactor.io/repository/github/napalm255/powerbash/badge)](https://www.codefactor.io/repository/github/napalm255/powerbash)
+[![Documentation Status](https://readthedocs.org/projects/powerbash/badge/?version=latest)](http://docs.powerbash.org/en/latest/?badge=latest)
 
 ## Features
 
