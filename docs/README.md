@@ -28,6 +28,12 @@ powerline-style bash prompt in pure bash script.
 ## Asciinema
 [![asciicast](https://asciinema.org/a/30836.png)](https://asciinema.org/a/30836)
 
+## Automated Installs
+
+Global: `curl -s https://get.powerbash.org | sudo bash`
+
+User: `curl -s https://get.powerbash.org | bash`
+
 ## Per-User Installation
 
 Download the Bash script
