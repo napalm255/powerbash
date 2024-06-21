@@ -1,3 +1,4 @@
 ---
 site_name: powerbash
-docs_dir: .
+docs_dir: docs
+site_dir: site
