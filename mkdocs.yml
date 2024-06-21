@@ -1,5 +1,4 @@
 ---
 site_name: powerbash
-docs_dir: .
 nav:
-  - Home: README.md
+  - Home: index.md
