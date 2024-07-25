@@ -2,16 +2,16 @@
 
 powerline-style bash prompt in pure bash script.
 
-
 [![Languages](https://img.shields.io/github/languages/top/napalm255/powerbash)](https://img.shields.io/github/languages/top/napalm255/powerbash)
 [![CodeFactor](https://www.codefactor.io/repository/github/napalm255/powerbash/badge)](https://www.codefactor.io/repository/github/napalm255/powerbash)
 [![Documentation Status](https://readthedocs.org/projects/powerbash/badge/?version=latest)](http://docs.powerbash.org/en/latest/?badge=latest)
+
 
 ## Features
 
 * 'powerbash' command for configuration
 * Bash completion support (powerbash [tab])
-* Displays username, hostname, path, git information, jobs count, symbol ($/#), return code
+* Displays username, hostname, path, git information, virtual environment, jobs count, symbol ($/#), return code
 * Color code for root, sudo, jobs count, return code
 * Git information:
   * display current git branch name, or short SHA1 hash when the head is detached
@@ -25,28 +25,40 @@ powerline-style bash prompt in pure bash script.
 * Fast execution (no noticable delay)
 * No need for patched fonts
 
+
 ## Asciinema
 [![asciicast](https://asciinema.org/a/30836.png)](https://asciinema.org/a/30836)
 
+
 ## Automated Installs
+
+Per-User: `curl -s https://get.powerbash.org | bash`
 
 Global: `curl -s https://get.powerbash.org | sudo bash`
 
-User: `curl -s https://get.powerbash.org | bash`
 
 ## Per-User Installation
 
-Download the Bash script
+#### Using .bashrc.d
 
-    curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh > ~/.powerbash.sh
+Download `powershell.sh`:
 
-And source it in '~/.bashrc' for your user account
+    curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh -o ~/.bashrc.d/powerbash.sh
 
-    source ~/.powerbash.sh
+#### Using .bashrc
+
+Download `powershell.sh`:
+
+    curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh -o ~/.local/bin/powerbash.sh
+
+And source it in '~/.bashrc' for your user account:
+
+    source ~/.local/bin/powerbash.sh
+
 
 ## Global Installation
 
-Download the Bash script
+Download the Bash script:
 
     sudo curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh -o /etc/profile.d/z_powerbash.sh
 
