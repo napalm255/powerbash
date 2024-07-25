@@ -62,7 +62,5 @@ Download the Bash script:
 
     sudo curl -Ls https://raw.githubusercontent.com/napalm255/powerbash/master/powerbash.sh -o /etc/profile.d/z_powerbash.sh
 
-Note:
-
-    powerbash is most consistent when it is the last profile.d script to run.
+Note: powerbash is most consistent when it is the last profile.d script to run.
 
