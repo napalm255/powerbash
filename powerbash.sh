@@ -8,7 +8,7 @@ powerbash() {
     reload) source ~/.bashrc ;;
     prompt)
       case "$2" in
-        on|off|system) export PROMPT_COMMAND="__powerbash_ps1 $2" ;;
+        on|off|system) __powerbash_set_prompt_command $2 ;;
         *) echo "invalid option" ;;
       esac
     ;;
@@ -312,7 +312,7 @@ __powerbash() {
     [ $1 -ne 0 ] && printf "$COLOR_RC $1 $RESET"
   }
 
-  __powerbash_ps1() {
+  __powerbash_set_ps1() {
     # keep this at top!!!
     # capture latest return code
     local RETURN_CODE=$?
@@ -339,7 +339,34 @@ __powerbash() {
     esac
   }
 
-  PROMPT_COMMAND="__powerbash_ps1 on"
+  __powerbash_set_prompt_command() {
+    # Play nice with other scripts that may also use PROMPT_COMMAND,
+    # such as direnv and vte_prompt_command.
+    if [[ -z "${PROMPT_COMMAND}" ]]; then
+      PROMPT_COMMAND="__powerbash_set_ps1 $1"
+    elif [[ "$(declare -p PROMPT_COMMAND 2>&1)" =~ "declare -a" ]]; then
+      # If PROMPT_COMMAND is an array (supported as of bash 5.1),
+      # then an item is added or the existing one is modified.
+      local _i_prompt_cmd
+      local _prompt_cmd_changed="no"
+      for ((_i_prompt_cmd=0; _i_prompt_cmd<${#PROMPT_COMMAND[@]}; _i_prompt_cmd++)); do
+        if [[ "${PROMPT_COMMAND[$_i_prompt_cmd]}" =~ "__powerbash_set_ps1" ]]; then
+          PROMPT_COMMAND[$_i_prompt_cmd]="__powerbash_set_ps1 $1"
+          _prompt_cmd_changed="yes"
+        fi
+      done
+      # No existing array element has been changed, so add a new one.
+      if [[ ${_prompt_cmd_changed} == "no" ]]; then
+        PROMPT_COMMAND+=("__powerbash_set_ps1 $1")
+      fi
+    elif [[ "${PROMPT_COMMAND}" == *"__powerbash_set_ps1"* ]]; then
+      PROMPT_COMMAND="$(sed -E "s/__powerbash_set_ps1 [a-z]+/__powerbash_set_ps1 $1/" <<< ${PROMPT_COMMAND})"
+    else
+      PROMPT_COMMAND="${PROMPT_COMMAND};__powerbash_set_ps1 $1"
+    fi
+  }
+
+  __powerbash_set_prompt_command on
 }
 
 # save system PS1
@@ -350,7 +377,7 @@ __powerbash
 unset __powerbash
 
 # load saved configuration
-POWERBASH_CONFIG="$HOME/.powerbash_config"
+POWERBASH_CONFIG="$HOME/.config/powerbashrc"
 [[ -e "$POWERBASH_CONFIG" ]] && __powerbash_config load
 
 # enable auto completion
