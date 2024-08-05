@@ -162,12 +162,17 @@ __powerbash() {
   __powerbash_py_virtualenv_display() {
     [ -z "$POWERBASH_PY_VIRTUALENV" ] && POWERBASH_PY_VIRTUALENV="on" # sane default
     [ "$POWERBASH_PY_VIRTUALENV" == "off" ] && return # disable display
-    [ -n "$VIRTUAL_ENV" ] || return # virtualenvironment not found
+    
+    # get virtualenv name (py or conda)
+    local venv_name=""
+    [ -n "$VIRTUAL_ENV" ] && local venv_name="$VIRTUAL_ENV"
+    [ -n "$CONDA_DEFAULT_ENV" ] && local venv_name="$CONDA_DEFAULT_ENV"
+    [ "$venv_name" == "" ] && return # virtual environment not found
 
-    # get virtualenv name
+    # build string to display virtualenv name
     local venv="$POWERBASH_PY_VIRTUALENV_SYMBOL"
-    [ "$POWERBASH_PY_VIRTUALENV" == "on" ] && local venv="$venv \[$(basename $VIRTUAL_ENV)\]"
-    [ "$POWERBASH_PY_VIRTUALENV" == "short" ] && local venv="$venv \[$(basename $VIRTUAL_ENV | cut -c1-5)\]"
+    [ "$POWERBASH_PY_VIRTUALENV" == "on" ] && local venv="$venv $(basename $venv_name)"
+    [ "$POWERBASH_PY_VIRTUALENV" == "short" ] && local venv="$venv $(basename $venv_name | cut -c1-5)"
     [ -n "$venv" ] || return
 
     printf "$COLOR_PY_VIRTUALENV $venv $RESET"
