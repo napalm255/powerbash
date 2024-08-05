@@ -162,7 +162,7 @@ __powerbash() {
   __powerbash_py_virtualenv_display() {
     [ -z "$POWERBASH_PY_VIRTUALENV" ] && POWERBASH_PY_VIRTUALENV="on" # sane default
     [ "$POWERBASH_PY_VIRTUALENV" == "off" ] && return # disable display
-    
+
     # get virtualenv name (py or conda)
     local venv_name=""
     [ -n "$VIRTUAL_ENV" ] && local venv_name="$VIRTUAL_ENV"
