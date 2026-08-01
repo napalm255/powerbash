@@ -49,7 +49,23 @@ jobs:
           echo "sha256=$sha" >> "$GITHUB_OUTPUT"
           echo "$url -> $sha"
 
+      # A missing tap token must not fail a release that has already been
+      # published -- the tarball is out and people can install it by hand.
+      # Warn loudly, skip the tap, and leave the formula to be bumped by hand.
+      - name: Is the tap token available?
+        id: tap
+        env:
+          TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Tap not updated::HOMEBREW_TAP_GITHUB_TOKEN is not set, so Formula/powerbash.rb still points at the previous release. Add the secret, or update the formula by hand with .github/scripts/bump-formula.py."
+          fi
+
       - name: Check out the tap
+        if: steps.tap.outputs.available == 'true'
         uses: actions/checkout@v5
         with:
           repository: powerbash/homebrew-powerbash
@@ -57,6 +73,7 @@ jobs:
           path: tap
 
       - name: Point the formula at the new release
+        if: steps.tap.outputs.available == 'true'
         run: |
           set -e
           python3 .github/scripts/bump-formula.py \
@@ -66,6 +83,7 @@ jobs:
           git -C tap diff -- Formula/powerbash.rb
 
       - name: Commit the formula
+        if: steps.tap.outputs.available == 'true'
         working-directory: tap
         run: |
           set -e
