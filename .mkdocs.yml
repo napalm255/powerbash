@@ -1,6 +1,0 @@
----
-site_name: powerbash
-docs_dir: docs
-nav:
-  - Home: README.md
-theme: readthedocs

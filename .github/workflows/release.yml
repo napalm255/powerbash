@@ -1,0 +1,79 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # A tag that disagrees with the script is worse than no release: the
+      # formula's `powerbash version` test would fail, and users would have
+      # a version number that means nothing.
+      - name: Check the tag matches POWERBASH_VERSION
+        run: |
+          set -e
+          tag="${GITHUB_REF_NAME#v}"
+          declared="$(sed -n 's/^POWERBASH_VERSION="\(.*\)"$/\1/p' powerbash.sh)"
+          if [ "$tag" != "$declared" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match POWERBASH_VERSION=${declared}" >&2
+            echo "bump POWERBASH_VERSION in powerbash.sh and re-tag" >&2
+            exit 1
+          fi
+          echo "version ${declared} matches tag ${GITHUB_REF_NAME}"
+
+      - name: Run the smoke test one more time
+        run: /bin/bash tests/smoke.sh
+
+      - name: Create the GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
+
+      # GitHub generates the source tarball lazily; fetch the one the formula
+      # will point at and hash exactly that, rather than hashing anything we
+      # built locally.
+      - name: Hash the release tarball
+        id: tarball
+        run: |
+          set -e
+          url="https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${GITHUB_REF_NAME}.tar.gz"
+          curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "$url" -o release.tar.gz
+          sha="$(sha256sum release.tar.gz | cut -d' ' -f1)"
+          echo "url=$url"   >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          echo "$url -> $sha"
+
+      - name: Check out the tap
+        uses: actions/checkout@v5
+        with:
+          repository: powerbash/homebrew-powerbash
+          token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          path: tap
+
+      - name: Point the formula at the new release
+        run: |
+          set -e
+          python3 .github/scripts/bump-formula.py \
+            tap/Formula/powerbash.rb \
+            "${{ steps.tarball.outputs.url }}" \
+            "${{ steps.tarball.outputs.sha256 }}"
+          git -C tap diff -- Formula/powerbash.rb
+
+      - name: Commit the formula
+        working-directory: tap
+        run: |
+          set -e
+          if git diff --quiet; then
+            echo "formula already points at ${GITHUB_REF_NAME}; nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "powerbash ${GITHUB_REF_NAME}"
+          git push

@@ -1,0 +1,64 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: shellcheck powerbash.sh tests/*.sh dev/*.sh dev/bashrc
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # macOS ships bash 3.2 as /bin/bash. Running the suite under it is the
+      # whole point of the matrix -- it is the oldest bash we support.
+      - name: Show bash version
+        run: /bin/bash --version | head -1
+
+      # Runners have no TTY and no $TERM. powerbash must source cleanly and
+      # render an uncolored prompt anyway; the suite asserts stderr is empty.
+      - name: Smoke test (no $TERM)
+        run: /bin/bash tests/smoke.sh
+
+      - name: Smoke test (TERM=xterm-256color)
+        env:
+          TERM: xterm-256color
+        run: /bin/bash tests/smoke.sh
+
+      - name: Reject non-bash shells cleanly
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y dash >/dev/null 2>&1 || true
+          if command -v dash >/dev/null; then
+            out="$(dash -c '. ./powerbash.sh' 2>&1)"
+            [ -z "$out" ] || { echo "dash produced output: $out" >&2; exit 1; }
+            echo "dash sourced the script with no errors"
+          fi
+
+  # macOS gives us bash 3.2.57, but only on one OS and only under BSD
+  # userland. This runs the same suite against 3.2 on Linux/musl. Deliberately
+  # a `docker run` step rather than a `container:` job -- the runner would have
+  # to inject a Node build into an Alpine image to run actions there, and the
+  # only thing we need in the container is bash. dev/test-bash32.sh does the
+  # same thing locally with podman.
+  bash32:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Smoke test under bash 3.2
+        run: |
+          docker run --rm -v "$PWD:/src:ro" -w /src bash:3.2 sh -c '
+            apk add --no-cache git ncurses >/dev/null &&
+            bash --version | head -1 &&
+            bash /src/tests/smoke.sh
+          '
