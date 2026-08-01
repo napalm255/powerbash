@@ -216,4 +216,88 @@ else
   info "degrades gracefully with no \$TERM (no tput here, color check skipped)"
 fi
 
+# --- survives a later script that assigns over PROMPT_COMMAND -------------
+
+# The real-world case: GNOME Terminal's /etc/profile.d/vte.sh appends when
+# PROMPT_COMMAND is an array and *assigns over it* when it is a string, so
+# anything registered earlier as a string is silently evicted. Verbatim from
+# vte.sh, so this keeps testing what that file actually does.
+cat > "$WORK/vte-sim.sh" <<'VTE'
+__vte_precmd() { :; }
+__vte_osc7() { :; }
+__vte_prompt_command() { :; }
+if [[ "$(declare -p PROMPT_COMMAND 2>&1)" =~ "declare -a" ]]; then
+    PROMPT_COMMAND+=(__vte_precmd)
+    PROMPT_COMMAND+=(__vte_osc7)
+else
+    PROMPT_COMMAND="__vte_prompt_command"
+fi
+VTE
+
+# bash runs every element of an array PROMPT_COMMAND only as of 5.1; below
+# that powerbash must still produce a string, and ordering is the only
+# defense (hence the z_ prefix on the /etc/profile.d install).
+pc_array="no"
+if [ "${BASH_VERSINFO[0]}" -gt 5 ] ||
+   { [ "${BASH_VERSINFO[0]}" -eq 5 ] && [ "${BASH_VERSINFO[1]}" -ge 1 ]; }; then
+  pc_array="yes"
+fi
+
+# Sourced last -- the ordering the docs recommend. Must hold on every bash.
+after="$("$BASH" -c "PS1=x; POWERBASH_CONFIG=$WORK/none; . '$WORK/vte-sim.sh'; . '$SCRIPT'; declare -p PROMPT_COMMAND" 2>/dev/null)"
+case "$after" in
+  *__powerbash_set_ps1*) ;;
+  *) fail "sourcing after a PROMPT_COMMAND setter dropped powerbash: $after" ;;
+esac
+case "$after" in
+  *__vte_prompt_command*|*__vte_precmd*) ;;
+  *) fail "sourcing after a PROMPT_COMMAND setter dropped the other hook: $after" ;;
+esac
+
+# Sourced first -- what an unprefixed /etc/profile.d install does. On 5.1+
+# the array we install makes the other script append instead of assign.
+before="$("$BASH" -c "PS1=x; POWERBASH_CONFIG=$WORK/none; . '$SCRIPT'; . '$WORK/vte-sim.sh'; declare -p PROMPT_COMMAND; printf 'IDX0=%s' \"\${PROMPT_COMMAND[0]}\"" 2>/dev/null)"
+if [ "$pc_array" = "yes" ]; then
+  case "$before" in
+    *__powerbash_set_ps1*) ;;
+    *) fail "a later PROMPT_COMMAND assignment evicted powerbash: $before" ;;
+  esac
+  # Index 0 is not cosmetic: it is what makes \$? the user's command status
+  # rather than the exit code of whatever else is registered.
+  case "$before" in
+    *"IDX0=__powerbash_set_ps1 on") ;;
+    *) fail "powerbash is no longer first in PROMPT_COMMAND: $before" ;;
+  esac
+  info "survives a later PROMPT_COMMAND assignment, in either order"
+else
+  # No array support: the string form is all that can be produced, so being
+  # sourced last is the only defense. Assert we still produce that string.
+  case "$before" in
+    declare\ --\ PROMPT_COMMAND*) ;;
+    *) fail "bash $BASH_VERSION should get a string PROMPT_COMMAND: $before" ;;
+  esac
+  info "survives a later PROMPT_COMMAND assignment when sourced last (no array support here)"
+fi
+
+# --- toggles still work alongside a foreign hook --------------------------
+
+foreign="$("$BASH" -c "
+  PS1=x; POWERBASH_CONFIG=$WORK/none
+  __other_hook() { :; }
+  PROMPT_COMMAND=(__other_hook)
+  . '$SCRIPT'
+  for m in off system on; do powerbash prompt \$m >/dev/null; done
+  declare -p PROMPT_COMMAND" 2>/dev/null)"
+if [ "$pc_array" = "yes" ]; then
+  case "$foreign" in
+    *'[0]="__powerbash_set_ps1 on"'*) ;;
+    *) fail "prompt toggles lost powerbash's slot: $foreign" ;;
+  esac
+  case "$foreign" in
+    *__other_hook*) ;;
+    *) fail "prompt toggles dropped a foreign hook: $foreign" ;;
+  esac
+  info "prompt off/system/on round-trip without disturbing other hooks"
+fi
+
 echo "all checks passed (bash $BASH_VERSION on $(uname -s))"

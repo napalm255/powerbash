@@ -221,6 +221,17 @@ __powerbash() {
     __POWERBASH_TIMEOUT_CMD="gtimeout"
   fi
 
+  # Resolved once: bash runs every element of an array PROMPT_COMMAND as of
+  # 5.1. Older bash expands it as a plain string, which yields element 0 and
+  # silently drops every other hook -- so the array form must never be
+  # created there. BASH_VERSINFO goes back to bash 2.0, so this is safe on
+  # the 3.2 we support.
+  __POWERBASH_PC_ARRAY="no"
+  if [ "${BASH_VERSINFO[0]}" -gt 5 ] ||
+     { [ "${BASH_VERSINFO[0]}" -eq 5 ] && [ "${BASH_VERSINFO[1]}" -ge 1 ]; }; then
+    __POWERBASH_PC_ARRAY="yes"
+  fi
+
   __powerbash_defaults() {
     [ -z "$POWERBASH_USER" ] && export POWERBASH_USER="on"
     [ -z "$POWERBASH_HOST" ] && export POWERBASH_HOST="auto"
@@ -597,7 +608,21 @@ __powerbash() {
     # is a false positive.
     # shellcheck disable=SC2178,SC2128
     if [ -z "${PROMPT_COMMAND}" ]; then
-      PROMPT_COMMAND="__powerbash_set_ps1 $1"
+      # Nothing registered yet, so we get to pick the type -- and the array
+      # form is what keeps us installed at all. Scripts that register a hook
+      # later commonly branch on `declare -p PROMPT_COMMAND`: given an array
+      # they append, given a string they assign over the top of it and every
+      # earlier hook is gone. GNOME Terminal's /etc/profile.d/vte.sh is the
+      # one people actually hit -- its else-branch is a bare
+      # `PROMPT_COMMAND="__vte_prompt_command"`. Handing it an array makes it
+      # append instead, which is why a /etc/profile.d install no longer has
+      # to be ordered after vte.sh on bash 5.1+. Below 5.1 the string is all
+      # we can safely produce, so that ordering still matters there.
+      if [ "$__POWERBASH_PC_ARRAY" = "yes" ]; then
+        PROMPT_COMMAND=("__powerbash_set_ps1 $1")
+      else
+        PROMPT_COMMAND="__powerbash_set_ps1 $1"
+      fi
     elif [[ "$(declare -p PROMPT_COMMAND 2>&1)" == "declare -a"* ]]; then
       # If PROMPT_COMMAND is an array (supported as of bash 5.1),
       # then an item is replaced or a new one is inserted at the front.
