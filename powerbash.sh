@@ -342,7 +342,7 @@ __powerbash() {
 
   __powerbash_git_display() {
     [ "$POWERBASH_GIT" = "off" ] && return 0
-    command -v git >/dev/null 2>&1 || return # git not found
+    command -v git >/dev/null 2>&1 || return 0 # git not found
 
     # Cheapest guard first: skip entire path prefixes (WSL /mnt/* by
     # default) without paying for a git invocation at all.
@@ -364,12 +364,21 @@ __powerbash() {
       git_status="$(git status --porcelain=v2 --branch 2>/dev/null)"
     fi
     rc=$?
-    [ "$rc" -eq 124 ] && return # timed out
+    [ "$rc" -eq 124 ] && return 0 # timed out
     if [ "$rc" -ne 0 ]; then
-      # Not a normal work tree (e.g. a linked worktree admin dir). Retry
-      # against the main work tree. Keyed off the exit code rather than a
-      # localized error string.
-      top="$(git rev-parse --show-toplevel 2>/dev/null)" || return 0
+      # Not a normal work tree -- e.g. inside .git/ itself, or a linked
+      # worktree's admin dir. `git rev-parse --show-toplevel` fails with the
+      # exact same error in this case, so it can't locate the work tree;
+      # `git worktree list` can, because it reads repository metadata
+      # rather than requiring one. Its --porcelain form is line-oriented
+      # and needs no sed. Keyed off the exit code rather than a localized
+      # error string.
+      local wt_line
+      while IFS= read -r wt_line; do
+        case "$wt_line" in
+          "worktree "*) top="${wt_line#worktree }"; break ;;
+        esac
+      done < <(git worktree list --porcelain 2>/dev/null)
       [ -n "$top" ] || return 0
       git_status="$(git -C "$top" status --porcelain=v2 --branch 2>/dev/null)" || return 0
     fi
@@ -389,7 +398,7 @@ __powerbash() {
         *) dirty="1" ;; # any non-header line means the tree is dirty
       esac
     done <<< "$git_status"
-    [ -n "$branch" ] || return # git branch not found
+    [ -n "$branch" ] || return 0 # git branch not found
 
     # detached HEAD: fall back to a friendly tag/SHA label
     if [ "$branch" = "(detached)" ]; then
