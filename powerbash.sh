@@ -13,7 +13,7 @@
 # exit for non-interactive
 [ -z "$PS1" ] && return 0
 
-POWERBASH_VERSION="1.1.0"
+POWERBASH_VERSION="2.0.0"
 
 # Settings that are persisted to / loaded from the config file. Anything not
 # in this list is never written and never read back, so a hand-edited or
@@ -22,6 +22,13 @@ __POWERBASH_SETTINGS="POWERBASH_USER POWERBASH_HOST POWERBASH_PATH \
 POWERBASH_PATH_SHORT_LENGTH POWERBASH_GIT POWERBASH_GIT_SKIP_PATHS \
 POWERBASH_GIT_TIMEOUT POWERBASH_JOBS POWERBASH_SYMBOL POWERBASH_RC \
 POWERBASH_PY_VIRTUALENV"
+
+# tput, but never noisy and never fatal. With no $TERM (cron, CI, a container
+# with no TTY) tput writes to stderr and exits non-zero, which under `set -e`
+# aborts the whole sourcing. Swallow both: no terminfo means no colors, which
+# is exactly the graceful degradation the docs promise. Defined at top level
+# because __powerbash uses it before it defines its own nested functions.
+__powerbash_tput() { tput "$@" 2>/dev/null || :; }
 
 __powerbash_usage() {
   cat <<'EOF'
@@ -204,7 +211,7 @@ __powerbash() {
   POWERBASH_GIT_BRANCH_CHANGED_SYMBOL="+"
   POWERBASH_GIT_NEED_PUSH_SYMBOL="⇡"
   POWERBASH_GIT_NEED_PULL_SYMBOL="⇣"
-  RESET="\[$(tput sgr0)\]"
+  RESET="\[$(__powerbash_tput sgr0)\]"
 
   # Resolved once: GNU coreutils installs as gtimeout on macOS via Homebrew.
   __POWERBASH_TIMEOUT_CMD=""
@@ -286,30 +293,38 @@ __powerbash() {
   }
 
   __powerbash_colors() {
-    if [ "$(tput colors 2>/dev/null || echo 8)" -lt 256 ]; then
+    local count
+    count="$(__powerbash_tput colors)"
+    # Anything not a plain non-negative integer (empty when there is no
+    # terminfo entry, "-1" on a dumb terminal) means "assume 8 colors".
+    case "$count" in
+      "" | *[!0-9]*) count=8 ;;
+    esac
+
+    if [ "$count" -lt 256 ]; then
       # 8 color support
-      COLOR_USER="\[$(tput setaf 7)\]\[$(tput setab 0)\]"
-      COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 0)\]"
-      COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 0)\]"
-      COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 0)\]"
-      COLOR_GIT="\[$(tput setaf 7)\]\[$(tput setab 4)\]"
-      COLOR_RC="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
-      COLOR_JOBS="\[$(tput setaf 7)\]\[$(tput setab 5)\]"
-      COLOR_PY_VIRTUALENV="\[$(tput setaf 7)\]\[$(tput setab 5)\]"
-      COLOR_SYMBOL_USER="\[$(tput setaf 7)\]\[$(tput setab 2)\]"
-      COLOR_SYMBOL_ROOT="\[$(tput setaf 7)\]\[$(tput setab 1)\]"
+      COLOR_USER="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 0)\]"
+      COLOR_SUDO="\[$(__powerbash_tput setaf 3)\]\[$(__powerbash_tput setab 0)\]"
+      COLOR_SSH="\[$(__powerbash_tput setaf 3)\]\[$(__powerbash_tput setab 0)\]"
+      COLOR_DIR="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 0)\]"
+      COLOR_GIT="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 4)\]"
+      COLOR_RC="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 1)\]"
+      COLOR_JOBS="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 5)\]"
+      COLOR_PY_VIRTUALENV="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 5)\]"
+      COLOR_SYMBOL_USER="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 2)\]"
+      COLOR_SYMBOL_ROOT="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 1)\]"
     else
       # 256 color support
-      COLOR_USER="\[$(tput setaf 15)\]\[$(tput setab 8)\]"
-      COLOR_SUDO="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
-      COLOR_SSH="\[$(tput setaf 3)\]\[$(tput setab 8)\]"
-      COLOR_DIR="\[$(tput setaf 7)\]\[$(tput setab 8)\]"
-      COLOR_GIT="\[$(tput setaf 15)\]\[$(tput setab 4)\]"
-      COLOR_RC="\[$(tput setaf 15)\]\[$(tput setab 9)\]"
-      COLOR_JOBS="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
-      COLOR_PY_VIRTUALENV="\[$(tput setaf 15)\]\[$(tput setab 5)\]"
-      COLOR_SYMBOL_USER="\[$(tput setaf 15)\]\[$(tput setab 2)\]"
-      COLOR_SYMBOL_ROOT="\[$(tput setaf 15)\]\[$(tput setab 1)\]"
+      COLOR_USER="\[$(__powerbash_tput setaf 15)\]\[$(__powerbash_tput setab 8)\]"
+      COLOR_SUDO="\[$(__powerbash_tput setaf 3)\]\[$(__powerbash_tput setab 8)\]"
+      COLOR_SSH="\[$(__powerbash_tput setaf 3)\]\[$(__powerbash_tput setab 8)\]"
+      COLOR_DIR="\[$(__powerbash_tput setaf 7)\]\[$(__powerbash_tput setab 8)\]"
+      COLOR_GIT="\[$(__powerbash_tput setaf 15)\]\[$(__powerbash_tput setab 4)\]"
+      COLOR_RC="\[$(__powerbash_tput setaf 15)\]\[$(__powerbash_tput setab 9)\]"
+      COLOR_JOBS="\[$(__powerbash_tput setaf 15)\]\[$(__powerbash_tput setab 5)\]"
+      COLOR_PY_VIRTUALENV="\[$(__powerbash_tput setaf 15)\]\[$(__powerbash_tput setab 5)\]"
+      COLOR_SYMBOL_USER="\[$(__powerbash_tput setaf 15)\]\[$(__powerbash_tput setab 2)\]"
+      COLOR_SYMBOL_ROOT="\[$(__powerbash_tput setaf 15)\]\[$(__powerbash_tput setab 1)\]"
     fi
   }
 
@@ -355,15 +370,17 @@ __powerbash() {
       done
     fi
 
-    # one call gets branch/head, upstream ahead/behind, and dirty status
-    local git_status rc top
+    # one call gets branch/head, upstream ahead/behind, and dirty status.
+    # `|| rc=$?` rather than a bare assignment plus `rc=$?`: git exits 128
+    # outside a work tree, and under `set -e` a failing command substitution
+    # in an assignment aborts the shell before the status can be read.
+    local git_status rc=0 top
     if [ -n "$POWERBASH_GIT_TIMEOUT" ] && [ -n "$__POWERBASH_TIMEOUT_CMD" ]; then
       git_status="$("$__POWERBASH_TIMEOUT_CMD" "$POWERBASH_GIT_TIMEOUT" \
-        git status --porcelain=v2 --branch 2>/dev/null)"
+        git status --porcelain=v2 --branch 2>/dev/null)" || rc=$?
     else
-      git_status="$(git status --porcelain=v2 --branch 2>/dev/null)"
+      git_status="$(git status --porcelain=v2 --branch 2>/dev/null)" || rc=$?
     fi
-    rc=$?
     [ "$rc" -eq 124 ] && return 0 # timed out
     if [ "$rc" -ne 0 ]; then
       # Not a normal work tree -- e.g. inside .git/ itself, or a linked
@@ -402,7 +419,7 @@ __powerbash() {
 
     # detached HEAD: fall back to a friendly tag/SHA label
     if [ "$branch" = "(detached)" ]; then
-      branch="$(git describe --tags --always 2>/dev/null)"
+      branch="$(git describe --tags --always 2>/dev/null || :)"
       [ -n "$branch" ] || return 0
     fi
 

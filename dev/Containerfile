@@ -1,0 +1,30 @@
+# Dev container for working on powerbash.
+#
+# Built by dev/toolbox-setup.sh and entered with dev/toolbox-enter.sh. The
+# point is a throwaway shell where sourcing powerbash.sh, breaking the prompt,
+# and writing ~/.config/powerbashrc costs nothing -- toolbox/distrobox bind
+# mount $HOME, so the repo is visible at the same path with no volume config.
+#
+# Everything below is something a segment renderer actually touches:
+#   git          - the git segment
+#   ncurses      - tput, the color palette
+#   coreutils    - timeout, for `powerbash git timeout`
+#   python3      - the virtualenv segment (python3 -m venv)
+#   ShellCheck   - the lint gate CI enforces
+#   podman       - so dev/test-bash32.sh works from inside the toolbox too
+FROM registry.fedoraproject.org/fedora-toolbox:latest
+
+RUN dnf install -y \
+      ShellCheck \
+      coreutils \
+      git \
+      ncurses \
+      podman \
+      procps-ng \
+      python3 \
+      python3-pip \
+      which \
+    && dnf clean all
+
+# Non-login shells inside the container should behave like a user's would.
+ENV TERM=xterm-256color

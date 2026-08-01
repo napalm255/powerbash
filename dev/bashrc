@@ -1,0 +1,35 @@
+# Interactive rcfile for the powerbash dev container (dev/toolbox-enter.sh).
+#
+# Sourced by `bash --rcfile`, so the shell you land in is running the working
+# copy of powerbash.sh. Edit the script, run `powerbash reload`, see the
+# result. POWERBASH_CONFIG is redirected to a scratch path so that `powerbash
+# config save` can never clobber the real ~/.config/powerbashrc -- toolbox
+# bind-mounts $HOME, so that file is the live one, not a copy.
+
+# shellcheck source=/dev/null
+[ -f /etc/bashrc ] && . /etc/bashrc
+
+POWERBASH_DEV_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export POWERBASH_DEV_ROOT
+
+export POWERBASH_CONFIG="${HOME}/.local/state/powerbash-dev/powerbashrc"
+mkdir -p "${POWERBASH_CONFIG%/*}"
+
+# shellcheck source=/dev/null
+. "${POWERBASH_DEV_ROOT}/powerbash.sh"
+
+alias pb-test='"${POWERBASH_DEV_ROOT}/tests/smoke.sh"'
+alias pb-lint='shellcheck "${POWERBASH_DEV_ROOT}/powerbash.sh" "${POWERBASH_DEV_ROOT}"/tests/*.sh "${POWERBASH_DEV_ROOT}"/dev/*.sh'
+alias pb-reload='. "${POWERBASH_DEV_ROOT}/powerbash.sh"'
+
+cat <<EOF
+
+powerbash dev container
+  script:  ${POWERBASH_DEV_ROOT}/powerbash.sh  (sourced, $(powerbash version))
+  config:  ${POWERBASH_CONFIG}  (scratch, not your real config)
+
+  pb-test    run the smoke test
+  pb-lint    shellcheck everything
+  pb-reload  re-source the script after an edit
+
+EOF
