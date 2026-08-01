@@ -22,16 +22,19 @@ and persisted to a small config file.
 powerbash installs into your own account. It does not need root, and a
 per-user install is the recommended way to run it.
 
-### Homebrew
+### Homebrew — recommended
 
 ```bash
 brew install powerbash/powerbash/powerbash
 ```
 
 Then add the line the caveats print to `~/.bashrc` (Linux) or `~/.bash_profile`
-(macOS).
+(macOS). Upgrades come along with the rest of your `brew upgrade`, which is
+why this is the path to prefer where you have it.
 
 ### Install script
+
+For machines without Homebrew.
 
 ```bash
 curl -s https://get.powerbash.org | bash
