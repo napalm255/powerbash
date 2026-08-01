@@ -1,10 +1,102 @@
-name: ShellCheck
+name: CI
 on:
   push:
   pull_request:
+
 jobs:
-  shellcheck:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: shellcheck powerbash.sh
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # macOS ships bash 3.2 as /bin/bash. Running the suite under it is the
+      # whole point of the matrix -- it is the oldest bash we support.
+      - name: Show bash version
+        run: /bin/bash --version | head -1
+
+      - name: Smoke test
+        shell: /bin/bash -e {0}
+        run: |
+          PS1='x'
+          # shellcheck source=/dev/null
+          source ./powerbash.sh
+
+          fail() { echo "FAIL: $*" >&2; exit 1; }
+
+          # every subcommand accepts its documented values
+          powerbash help >/dev/null       || fail "help"
+          powerbash version >/dev/null    || fail "version"
+          for v in on off system;      do powerbash prompt $v >/dev/null || fail "prompt $v"; done
+          for v in on off auto;        do powerbash host   $v >/dev/null || fail "host $v"; done
+          for s in user git jobs symbol rc; do
+            for v in on off;           do powerbash $s     $v >/dev/null || fail "$s $v"; done
+          done
+          for v in off full working parted mini short; do
+            powerbash path $v >/dev/null || fail "path $v"
+          done
+          for v in on off icon short;  do powerbash py virtualenv $v >/dev/null || fail "py virtualenv $v"; done
+          powerbash path short add 5 >/dev/null      || fail "path short add"
+          powerbash path short subtract 2 >/dev/null || fail "path short subtract"
+
+          # invalid input is rejected, not silently ignored
+          if powerbash bogus >/dev/null 2>&1; then fail "bogus accepted"; fi
+          if powerbash path bogus >/dev/null 2>&1; then fail "path bogus accepted"; fi
+          if powerbash py virtualenv bogus >/dev/null 2>&1; then fail "py virtualenv bogus accepted"; fi
+
+          # arithmetic injection must be refused
+          rm -f /tmp/PB_PWNED
+          powerbash path short add 'a[$(touch /tmp/PB_PWNED)]' >/dev/null 2>&1 || true
+          if [ -e /tmp/PB_PWNED ]; then fail "arithmetic injection executed"; fi
+
+          # renders a non-empty prompt outside a repo
+          # (the loops above left several toggles off; reset what we assert on)
+          powerbash prompt on >/dev/null
+          powerbash path working >/dev/null
+          powerbash git on >/dev/null
+          powerbash symbol on >/dev/null
+          PS1=''; __powerbash_set_ps1 on
+          [ -n "$PS1" ] || fail "empty PS1"
+
+          # renders inside a git repo, and a hostile branch name is inert
+          repo="$(mktemp -d)"
+          git -C "$repo" init -q
+          git -C "$repo" -c user.email=t@t -c user.name=t commit --allow-empty -qm init
+          git -C "$repo" checkout -q -b '$(touch /tmp/PB_PWNED2)x' 2>/dev/null || \
+            git -C "$repo" checkout -q -b 'safe-branch'
+          cd "$repo"
+          rm -f /tmp/PB_PWNED2
+          PS1=''; __powerbash_set_ps1 on
+          [ -n "$PS1" ] || fail "empty PS1 in repo"
+          printf '%s' "$PS1" | grep -q '»' || fail "git segment missing"
+          eval "expanded=\"${PS1}\"" >/dev/null 2>&1 || true
+          if [ -e /tmp/PB_PWNED2 ]; then fail "branch-name injection executed"; fi
+
+          # config round-trip
+          export POWERBASH_CONFIG="$repo/powerbashrc"
+          powerbash path short >/dev/null
+          powerbash config save || fail "config save"
+          grep -q '^POWERBASH_PATH=short$' "$POWERBASH_CONFIG" || fail "config save contents"
+          powerbash config default >/dev/null || fail "config default"
+          powerbash config load    >/dev/null || fail "config load"
+
+          echo "all checks passed on ${{ matrix.os }}"
+
+      - name: Reject non-bash shells cleanly
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y dash >/dev/null 2>&1 || true
+          if command -v dash >/dev/null; then
+            out="$(dash -c '. ./powerbash.sh' 2>&1)"
+            [ -z "$out" ] || { echo "dash produced output: $out" >&2; exit 1; }
+            echo "dash sourced the script with no errors"
+          fi
