@@ -64,9 +64,22 @@ done
 powerbash path short add 5 >/dev/null      || fail "path short add"
 powerbash path short subtract 2 >/dev/null || fail "path short subtract"
 powerbash git skip "$WORK/nowhere/"        || fail "git skip"
-powerbash git timeout 1 >/dev/null         || fail "git timeout 1"
-powerbash git timeout 0 >/dev/null         || fail "git timeout 0"
 powerbash git skip "" >/dev/null           || fail "git skip reset"
+
+# `git timeout <n>` deliberately refuses when there is no timeout(1) to run --
+# stock macOS has neither timeout nor gtimeout unless coreutils is installed.
+# Assert whichever behavior applies, rather than assuming the command exists.
+powerbash git timeout 0 >/dev/null || fail "git timeout 0"
+if command -v timeout >/dev/null 2>&1 || command -v gtimeout >/dev/null 2>&1; then
+  powerbash git timeout 1 >/dev/null || fail "git timeout 1"
+  [ "$POWERBASH_GIT_TIMEOUT" = "1" ] || fail "git timeout 1 did not take effect"
+  powerbash git timeout 0 >/dev/null || fail "git timeout 0 (reset)"
+else
+  if powerbash git timeout 1 >/dev/null 2>&1; then
+    fail "git timeout 1 accepted with no timeout(1) available"
+  fi
+fi
+if powerbash git timeout abc >/dev/null 2>&1; then fail "git timeout abc accepted"; fi
 
 info "all subcommands accept their documented values"
 
