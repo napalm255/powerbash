@@ -12,6 +12,16 @@
 POWERBASH_DEV_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export POWERBASH_DEV_ROOT
 
+# toolbox hands the container the host's $TERM, which the container may not
+# have a terminfo entry for -- ncurses-term covers the long tail, but a
+# brand-new terminal can still arrive unknown. powerbash degrades to a plain
+# prompt then, which is correct but makes the container a poor place to look
+# at colors. Fall back to a name that always resolves, and say so.
+if ! tput colors >/dev/null 2>&1; then
+    echo "note: no terminfo for TERM=${TERM:-unset} in here; using xterm-256color" >&2
+    export TERM=xterm-256color
+fi
+
 export POWERBASH_CONFIG="${HOME}/.local/state/powerbash-dev/powerbashrc"
 mkdir -p "${POWERBASH_CONFIG%/*}"
 

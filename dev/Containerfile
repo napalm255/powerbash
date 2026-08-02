@@ -8,6 +8,11 @@
 # Everything below is something a segment renderer actually touches:
 #   git          - the git segment
 #   ncurses      - tput, the color palette
+#   ncurses-term - terminfo for terminals the base image does not know.
+#                  toolbox propagates the host's $TERM into the container, so
+#                  a ghostty or wezterm user would otherwise hand tput a name
+#                  it cannot resolve -- and powerbash then renders with no
+#                  color at all, because every setaf/setab comes back empty.
 #   coreutils    - timeout, for `powerbash git timeout`
 #   python3      - the virtualenv segment (python3 -m venv)
 #   ShellCheck   - the lint gate CI enforces
@@ -21,6 +26,7 @@ RUN dnf install -y \
       git \
       make \
       ncurses \
+      ncurses-term \
       podman \
       procps-ng \
       python3 \
