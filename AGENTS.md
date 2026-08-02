@@ -8,7 +8,7 @@ powerbash is a single pure-Bash script (`powerbash.sh`) that implements a powerl
 
 **A per-user install is the supported path.** A `/etc/profile.d/` multi-user install still works and the script guards against being sourced by `dash` there, but docs must not lead with it — it upgrades badly, needs root, and imposes one prompt on every account on the box.
 
-The root `README.md` is deliberately short: install paths and a pointer to the full documentation, which lives on the website (`powerbash.org/docs/`, repo `powerbash/powerbash.github.io`). There is no MkDocs/Read the Docs setup any more — if you add a user-visible setting, the docs change goes in that repo, not here. `CNAME` (`download.powerbash.org`) plus `.nojekyll` configure GitHub Pages for this repo, which is what serves `https://download.powerbash.org/powerbash.sh` — the canonical download URL used by the installer and the docs. It tracks `master`, so anything merged there is live immediately.
+The root `README.md` is deliberately short: install paths and a pointer to the full documentation, which lives on the website (`powerbash.org/docs/`, repo `powerbash/powerbash.github.io`). There is no MkDocs/Read the Docs setup any more — if you add a user-visible setting, the docs change goes in that repo, not here. `CNAME` (`download.powerbash.org`) plus `.nojekyll` configure GitHub Pages for this repo, which is what serves `https://download.powerbash.org/powerbash.sh` — the canonical download URL used by the installer and the docs. It tracks `main`, so anything merged there is live immediately.
 
 ## Hard constraints
 
@@ -88,4 +88,4 @@ Four repos, all fed from this one:
 
 There is still no packaging step for the script itself. Pushing a `v*` tag runs `.github/workflows/release.yml`, which checks `POWERBASH_VERSION` against the tag, cuts the GitHub release, hashes the tag tarball, and commits a regenerated formula to the tap. Bump `POWERBASH_VERSION` in the same commit as the change, not at tag time.
 
-Two consequences for every edit to `powerbash.sh`: it is live on `download.powerbash.org` the moment it merges to `master`, ahead of any release — so `master` must always be sourceable. And existing users carry `POWERBASH_*` env vars and saved `~/.config/powerbashrc` files across upgrades, so settings must stay backward-compatible.
+Two consequences for every edit to `powerbash.sh`: it is live on `download.powerbash.org` the moment it merges to `main`, ahead of any release — so `main` must always be sourceable. And existing users carry `POWERBASH_*` env vars and saved `~/.config/powerbashrc` files across upgrades, so settings must stay backward-compatible.
