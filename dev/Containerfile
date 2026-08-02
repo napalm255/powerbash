@@ -11,6 +11,7 @@
 #   coreutils    - timeout, for `powerbash git timeout`
 #   python3      - the virtualenv segment (python3 -m venv)
 #   ShellCheck   - the lint gate CI enforces
+#   make         - the task runner, so the targets work inside the container too
 #   podman       - so dev/test-bash32.sh works from inside the toolbox too
 FROM registry.fedoraproject.org/fedora-toolbox:latest
 
@@ -18,6 +19,7 @@ RUN dnf install -y \
       ShellCheck \
       coreutils \
       git \
+      make \
       ncurses \
       podman \
       procps-ng \

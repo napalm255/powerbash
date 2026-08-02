@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - run: shellcheck powerbash.sh tests/*.sh dev/*.sh dev/bashrc
+      - run: make lint
 
   test:
     strategy:
@@ -26,13 +26,15 @@ jobs:
 
       # Runners have no TTY and no $TERM. powerbash must source cleanly and
       # render an uncolored prompt anyway; the suite asserts stderr is empty.
+      # BASH is pinned because on macOS /bin/bash is the 3.2.57 we support and
+      # whatever is on PATH is not.
       - name: Smoke test (no $TERM)
-        run: /bin/bash tests/smoke.sh
+        run: make test BASH=/bin/bash
 
       - name: Smoke test (TERM=xterm-256color)
         env:
           TERM: xterm-256color
-        run: /bin/bash tests/smoke.sh
+        run: make test BASH=/bin/bash
 
       - name: Reject non-bash shells cleanly
         if: runner.os == 'Linux'
@@ -45,20 +47,15 @@ jobs:
           fi
 
   # macOS gives us bash 3.2.57, but only on one OS and only under BSD
-  # userland. This runs the same suite against 3.2 on Linux/musl. Deliberately
-  # a `docker run` step rather than a `container:` job -- the runner would have
-  # to inject a Node build into an Alpine image to run actions there, and the
-  # only thing we need in the container is bash. dev/test-bash32.sh does the
-  # same thing locally with podman.
+  # userland. This runs the same suite against 3.2 on Linux/musl, through the
+  # same dev/test-bash32.sh a contributor runs locally. Deliberately not a
+  # `container:` job -- the runner would have to inject a Node build into an
+  # Alpine image to run actions there, and the only thing we need in the
+  # container is bash.
   bash32:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
       - name: Smoke test under bash 3.2
-        run: |
-          docker run --rm -v "$PWD:/src:ro" -w /src bash:3.2 sh -c '
-            apk add --no-cache git ncurses >/dev/null &&
-            bash --version | head -1 &&
-            bash /src/tests/smoke.sh
-          '
+        run: make test-bash32

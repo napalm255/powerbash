@@ -24,29 +24,25 @@ The root `README.md` is deliberately short: install paths and a pointer to the f
 
 ## Commands
 
-Lint. `.shellcheckrc` pins `shell=bash` and `quote-safe-variables`, and everything is currently **shellcheck-clean with zero findings** — keep it that way:
+`make` on its own lists every target. The ones that matter:
 
 ```bash
-shellcheck powerbash.sh tests/*.sh dev/*.sh dev/bashrc
+make check          # lint + suite + suite under bash 3.2. Run this before pushing.
+make lint           # shellcheck; must stay at zero findings
+make test           # the suite under whatever bash you have
+make test BASH=/bin/bash    # ...or a specific one
+make test-bash32    # the suite under bash 3.2, in a container
+make toolbox        # build the dev container (one time)
+make shell          # a shell in it, running the working copy of the prompt
 ```
 
-Run the suite. `tests/smoke.sh` drives every subcommand, asserts invalid input is rejected, checks both PS1 injection vectors, and covers the no-`$TERM` path. It is bash 3.2-safe and hermetic (one `mktemp -d`, `POWERBASH_CONFIG` redirected into it), so it never reads or writes the caller's real config:
+Every target is a thin wrapper around a script that still works on its own, and **CI calls the same targets** — so a wrapper that drifts from what the script does fails on the next push. Add a script and a target together, or neither.
 
-```bash
-./tests/smoke.sh          # under whatever bash you have
-./dev/test-bash32.sh      # the same suite under bash 3.2 in a container
-```
+`.shellcheckrc` pins `shell=bash` and `quote-safe-variables`, and everything is currently **shellcheck-clean with zero findings**. `tests/smoke.sh` drives every subcommand, asserts invalid input is rejected, checks both PS1 injection vectors, covers the no-`$TERM` path, and covers a later script assigning over `PROMPT_COMMAND`. It is bash 3.2-safe and hermetic (one `mktemp -d`, `POWERBASH_CONFIG` redirected into it), so it never reads or writes the caller's real config.
 
-CI (`.github/workflows/ci.yml`) runs shellcheck, then that suite on `ubuntu-latest` and `macos-latest` twice — once with no `$TERM`, once with `TERM=xterm-256color` — plus a `bash:3.2` container job and a `dash` job asserting non-bash shells get silence. The macOS runner uses `/bin/bash` 3.2.57; the container job covers 3.2 on musl.
+CI (`.github/workflows/ci.yml`) runs `make lint`, then `make test` on `ubuntu-latest` and `macos-latest` twice — once with no `$TERM`, once with `TERM=xterm-256color` — plus `make test-bash32` and a `dash` job asserting non-bash shells get silence. The macOS runner pins `BASH=/bin/bash`, which is 3.2.57 there; `make test-bash32` covers 3.2 on musl. `make check` is all of that except the macOS and `dash` jobs, which need runners you do not have locally.
 
-Work on the prompt interactively in a container, where a broken `PS1` costs nothing:
-
-```bash
-./dev/toolbox-setup.sh    # build the image, create the container (one time)
-./dev/toolbox-enter.sh    # shell running the working copy; pb-test, pb-lint, pb-reload
-```
-
-Or just source it in place:
+Outside the container, exercise a change by sourcing the script in place:
 
 ```bash
 source powerbash.sh

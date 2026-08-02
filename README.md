@@ -81,13 +81,14 @@ Runs on Linux, macOS, and WSL.
 ## Development
 
 ```bash
-./tests/smoke.sh          # the full suite, runs anywhere
-./dev/test-bash32.sh      # the same suite under bash 3.2, in a container
-shellcheck powerbash.sh   # must stay at zero findings
-
-./dev/toolbox-setup.sh    # build the dev container (one time)
-./dev/toolbox-enter.sh    # a shell running the working copy of the prompt
+make                # list every target
+make check          # lint, the suite, and the suite under bash 3.2
+make toolbox        # build the dev container (one time)
+make shell          # a shell in it, running the working copy of the prompt
 ```
+
+The targets wrap `tests/smoke.sh` and the scripts in `dev/`, all of which still
+run on their own. CI calls the same targets.
 
 See [AGENTS.md](AGENTS.md) for the architecture and the constraints that shape
 the script.
