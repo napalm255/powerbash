@@ -48,7 +48,7 @@ jobs:
 
   # macOS gives us bash 3.2.57, but only on one OS and only under BSD
   # userland. This runs the same suite against 3.2 on Linux/musl, through the
-  # same dev/test-bash32.sh a contributor runs locally. Deliberately not a
+  # same `make test-bash32` a contributor runs locally. Deliberately not a
   # `container:` job -- the runner would have to inject a Node build into an
   # Alpine image to run actions there, and the only thing we need in the
   # container is bash.

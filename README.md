@@ -87,8 +87,8 @@ make toolbox        # build the dev container (one time)
 make shell          # a shell in it, running the working copy of the prompt
 ```
 
-The targets wrap `tests/smoke.sh` and the scripts in `dev/`, all of which still
-run on their own. CI calls the same targets.
+`tests/smoke.sh` also runs on its own — it has to, since it runs inside a
+bash 3.2 container with no make in it. CI calls the same targets.
 
 See [AGENTS.md](AGENTS.md) for the architecture and the constraints that shape
 the script.

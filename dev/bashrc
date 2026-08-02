@@ -1,4 +1,4 @@
-# Interactive rcfile for the powerbash dev container (dev/toolbox-enter.sh).
+# Interactive rcfile for the powerbash dev container (`make shell`).
 #
 # Sourced by `bash --rcfile`, so the shell you land in is running the working
 # copy of powerbash.sh. Edit the script, run `powerbash reload`, see the

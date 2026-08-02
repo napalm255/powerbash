@@ -36,7 +36,9 @@ make toolbox        # build the dev container (one time)
 make shell          # a shell in it, running the working copy of the prompt
 ```
 
-Every target is a thin wrapper around a script that still works on its own, and **CI calls the same targets** — so a wrapper that drifts from what the script does fails on the next push. Add a script and a target together, or neither.
+**CI calls these same targets**, so one that drifts from what the project does fails on the next push rather than going stale in prose. The container plumbing lives in the recipes themselves; only three things stay files, each because something other than make has to read them: `tests/smoke.sh` (it runs inside `bash:3.2`, an Alpine image with no make in it), `dev/bashrc` (`bash --rcfile` takes a path), and `dev/Containerfile` (`podman build -f` takes a path). Recipes target GNU make 3.81, which is what macOS ships — no `.ONESHELL`, so multi-step recipes are one backslash-continued shell line.
+
+Note the tradeoff: shell inside a recipe is not reachable by shellcheck. Keep recipes to plumbing, and put anything with real logic in a file that `make lint` covers.
 
 `.shellcheckrc` pins `shell=bash` and `quote-safe-variables`, and everything is currently **shellcheck-clean with zero findings**. `tests/smoke.sh` drives every subcommand, asserts invalid input is rejected, checks both PS1 injection vectors, covers the no-`$TERM` path, and covers a later script assigning over `PROMPT_COMMAND`. It is bash 3.2-safe and hermetic (one `mktemp -d`, `POWERBASH_CONFIG` redirected into it), so it never reads or writes the caller's real config.
 
