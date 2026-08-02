@@ -13,7 +13,7 @@
 # exit for non-interactive
 [ -z "$PS1" ] && return 0
 
-POWERBASH_VERSION="2.0.1"
+POWERBASH_VERSION="2.0.2"
 
 # Settings that are persisted to / loaded from the config file. Anything not
 # in this list is never written and never read back, so a hand-edited or
